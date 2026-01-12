@@ -10,6 +10,7 @@
         "Category": "Utilities",
         "Description": "A plasmoid to track time with Kimai",
         "EnabledByDefault": true,
+        "Icon": "chronometer",
         "Id": "com.mte90.kimaitracker",
         "License": "GPL-3.0",
         "Name": "Kimai Tracker",
