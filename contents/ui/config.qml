@@ -14,7 +14,7 @@ KCM.SimpleKCM {
         // Kimai Server URL
         QQC2.TextField {
             id: kimaiUrlField
-            Kirigami.FormData.label: i18n("Kimai Server URL:")
+            Kirigami.FormData.label: i18n("Kimai Server URL (without /api):")
             placeholderText: i18n("https://your-kimai-instance.com")
         }
 

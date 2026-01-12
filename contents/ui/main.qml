@@ -336,7 +336,7 @@ PlasmoidItem {
                 
                 var xhr = new XMLHttpRequest()
                 xhr.open("POST", kimaiUrl + "/api/timesheets", true)
-                xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+                xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
                 xhr.setRequestHeader("Content-Type", "application/json")
                 
                 var data = {
@@ -376,7 +376,7 @@ PlasmoidItem {
 
         var xhr = new XMLHttpRequest()
         xhr.open("GET", kimaiUrl + "/api/activities?project=" + projectId + "&visible=3&order=name&orderBy=ASC", true)
-        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -411,7 +411,7 @@ PlasmoidItem {
 
         var xhr = new XMLHttpRequest()
         xhr.open("GET", kimaiUrl + "/api/projects?visible=3&order=name&orderBy=ASC", true)
-        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -446,7 +446,7 @@ PlasmoidItem {
         
         var xhr = new XMLHttpRequest()
         xhr.open("GET", kimaiUrl + "/api/activities?project=" + projectId + "&visible=3&order=name&orderBy=ASC", true)
-        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -473,7 +473,7 @@ PlasmoidItem {
 
         var xhr = new XMLHttpRequest()
         xhr.open("GET", kimaiUrl + "/api/timesheets/active", true)
-        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -533,7 +533,7 @@ PlasmoidItem {
         
         var xhr = new XMLHttpRequest()
         xhr.open("POST", kimaiUrl + "/api/timesheets", true)
-        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
         xhr.setRequestHeader("Content-Type", "application/json")
         
         var data = {
@@ -571,7 +571,7 @@ PlasmoidItem {
 
         var xhr = new XMLHttpRequest()
         xhr.open("PATCH", kimaiUrl + "/api/timesheets/" + currentTimeSheetId + "/stop", true)
-        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
         xhr.setRequestHeader("Content-Type", "application/json")
         
         xhr.onreadystatechange = function() {

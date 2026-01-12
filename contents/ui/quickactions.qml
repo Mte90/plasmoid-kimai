@@ -24,8 +24,9 @@ KCM.SimpleKCM {
         }
 
         var xhr = new XMLHttpRequest()
-        xhr.open("GET", kimaiUrl + "/api/projects?visible=3&order=name&orderBy=ASC", true)
-        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.open("GET", kimaiUrl + "/api/projects?", true)
+        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
+        xhr.setRequestHeader("Content-Type", "application/json")
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -38,7 +39,7 @@ KCM.SimpleKCM {
                         statusLabel.text = i18n("Error parsing projects: %1", e)
                     }
                 } else {
-                    statusLabel.text = i18n("Error loading projects: %1", xhr.status)
+                    statusLabel.text = i18n("Error loading projects: %1, %2", xhr.status, kimaiUrl + "/api/projects")
                 }
             }
         }
