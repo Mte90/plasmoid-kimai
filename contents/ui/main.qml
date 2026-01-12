@@ -15,6 +15,9 @@ Item {
     property string currentProject: ""
     property string currentActivity: ""
     property int elapsedSeconds: 0
+    property int currentTimeSheetId: -1
+    property var projects: []
+    property var activities: []
 
     // Plasmoid properties
     Plasmoid.preferredRepresentation: Plasmoid.compactRepresentation
@@ -32,6 +35,17 @@ Item {
         repeat: true
         onTriggered: {
             elapsedSeconds++
+        }
+    }
+
+    // Timer to periodically fetch active timesheet
+    Timer {
+        id: checkActiveTimer
+        interval: 30000 // Check every 30 seconds
+        running: kimaiUrl && apiToken
+        repeat: true
+        onTriggered: {
+            fetchActiveTimesheet()
         }
     }
 
@@ -145,7 +159,7 @@ Item {
                 Layout.fillWidth: true
             }
 
-            // Project selection (placeholder)
+            // Project selection
             PlasmaExtras.Heading {
                 Layout.fillWidth: true
                 level: 4
@@ -156,15 +170,20 @@ Item {
                 id: projectComboBox
                 Layout.fillWidth: true
                 enabled: !isTracking && kimaiUrl && apiToken
-                model: [i18n("Select a project..."), i18n("Example Project 1"), i18n("Example Project 2")]
+                model: getProjectNames()
                 currentIndex: 0
+                onCurrentIndexChanged: {
+                    if (currentIndex > 0) {
+                        loadActivitiesForProject()
+                    }
+                }
             }
 
             PlasmaComponents3.ComboBox {
                 id: activityComboBox
                 Layout.fillWidth: true
                 enabled: !isTracking && kimaiUrl && apiToken && projectComboBox.currentIndex > 0
-                model: [i18n("Select an activity..."), i18n("Development"), i18n("Meeting"), i18n("Documentation")]
+                model: getActivityNames()
                 currentIndex: 0
             }
 
@@ -191,16 +210,6 @@ Item {
             Item {
                 Layout.fillHeight: true
             }
-
-            // Info message
-            PlasmaComponents3.Label {
-                Layout.fillWidth: true
-                text: i18n("Note: This is a preview version. Kimai API integration is not yet implemented. Example projects/activities are shown for demonstration.")
-                wrapMode: Text.WordWrap
-                font.pointSize: PlasmaCore.Theme.smallestFont.pointSize
-                font.italic: true
-                horizontalAlignment: Text.AlignHCenter
-            }
         }
     }
 
@@ -214,6 +223,126 @@ Item {
                (secs < 10 ? "0" : "") + secs
     }
 
+    function getProjectNames() {
+        var names = [i18n("Select a project...")]
+        for (var i = 0; i < projects.length; i++) {
+            names.push(projects[i].name)
+        }
+        return names
+    }
+
+    function getActivityNames() {
+        var names = [i18n("Select an activity...")]
+        for (var i = 0; i < activities.length; i++) {
+            names.push(activities[i].name)
+        }
+        return names
+    }
+
+    function loadProjects() {
+        if (!kimaiUrl || !apiToken) {
+            return
+        }
+
+        var xhr = new XMLHttpRequest()
+        xhr.open("GET", kimaiUrl + "/api/projects?visible=3&order=name&orderBy=ASC", true)
+        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Content-Type", "application/json")
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        projects = JSON.parse(xhr.responseText)
+                        projectComboBox.model = getProjectNames()
+                    } catch (e) {
+                        console.error("Failed to parse projects:", e)
+                    }
+                } else {
+                    console.error("Failed to load projects:", xhr.status, xhr.statusText)
+                }
+            }
+        }
+        
+        xhr.send()
+    }
+
+    function loadActivitiesForProject() {
+        if (!kimaiUrl || !apiToken || projectComboBox.currentIndex <= 0) {
+            return
+        }
+
+        var projectId = projects[projectComboBox.currentIndex - 1].id
+        
+        var xhr = new XMLHttpRequest()
+        xhr.open("GET", kimaiUrl + "/api/activities?project=" + projectId + "&visible=3&order=name&orderBy=ASC", true)
+        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Content-Type", "application/json")
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        activities = JSON.parse(xhr.responseText)
+                        activityComboBox.model = getActivityNames()
+                    } catch (e) {
+                        console.error("Failed to parse activities:", e)
+                    }
+                } else {
+                    console.error("Failed to load activities:", xhr.status, xhr.statusText)
+                }
+            }
+        }
+        
+        xhr.send()
+    }
+
+    function fetchActiveTimesheet() {
+        if (!kimaiUrl || !apiToken) {
+            return
+        }
+
+        var xhr = new XMLHttpRequest()
+        xhr.open("GET", kimaiUrl + "/api/timesheets/active", true)
+        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Content-Type", "application/json")
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        var activeTimesheets = JSON.parse(xhr.responseText)
+                        if (activeTimesheets.length > 0) {
+                            var timesheet = activeTimesheets[0]
+                            isTracking = true
+                            currentTimeSheetId = timesheet.id
+                            currentProject = timesheet.project ? timesheet.project.name : ""
+                            currentActivity = timesheet.activity ? timesheet.activity.name : ""
+                            
+                            // Calculate elapsed seconds
+                            var beginDate = new Date(timesheet.begin)
+                            var now = new Date()
+                            elapsedSeconds = Math.floor((now - beginDate) / 1000)
+                        } else {
+                            if (isTracking && currentTimeSheetId !== -1) {
+                                // Tracking stopped remotely
+                                isTracking = false
+                                currentTimeSheetId = -1
+                                currentProject = ""
+                                currentActivity = ""
+                                elapsedSeconds = 0
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Failed to parse active timesheet:", e)
+                    }
+                }
+            }
+        }
+        
+        xhr.send()
+    }
+
     function startTracking() {
         if (!kimaiUrl || !apiToken) {
             return
@@ -223,25 +352,89 @@ Item {
             return
         }
 
-        // TODO: Implement actual API call to Kimai
-        // For now, just update local state
-        isTracking = true
-        currentProject = projectComboBox.currentText
-        currentActivity = activityComboBox.currentText
-        elapsedSeconds = 0
+        var projectId = projects[projectComboBox.currentIndex - 1].id
+        var activityId = activities[activityComboBox.currentIndex - 1].id
+        
+        var xhr = new XMLHttpRequest()
+        xhr.open("POST", kimaiUrl + "/api/timesheets", true)
+        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Content-Type", "application/json")
+        
+        var data = {
+            begin: new Date().toISOString(),
+            project: projectId,
+            activity: activityId
+        }
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200 || xhr.status === 201) {
+                    try {
+                        var response = JSON.parse(xhr.responseText)
+                        isTracking = true
+                        currentTimeSheetId = response.id
+                        currentProject = projectComboBox.currentText
+                        currentActivity = activityComboBox.currentText
+                        elapsedSeconds = 0
+                    } catch (e) {
+                        console.error("Failed to parse start tracking response:", e)
+                    }
+                } else {
+                    console.error("Failed to start tracking:", xhr.status, xhr.statusText)
+                }
+            }
+        }
+        
+        xhr.send(JSON.stringify(data))
     }
 
     function stopTracking() {
-        // TODO: Implement actual API call to Kimai to stop tracking
-        // For now, just update local state
-        isTracking = false
-        currentProject = ""
-        currentActivity = ""
-        elapsedSeconds = 0
+        if (!kimaiUrl || !apiToken || currentTimeSheetId === -1) {
+            return
+        }
+
+        var xhr = new XMLHttpRequest()
+        xhr.open("PATCH", kimaiUrl + "/api/timesheets/" + currentTimeSheetId + "/stop", true)
+        xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
+        xhr.setRequestHeader("Content-Type", "application/json")
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    isTracking = false
+                    currentTimeSheetId = -1
+                    currentProject = ""
+                    currentActivity = ""
+                    elapsedSeconds = 0
+                } else {
+                    console.error("Failed to stop tracking:", xhr.status, xhr.statusText)
+                }
+            }
+        }
+        
+        xhr.send()
     }
 
     Component.onCompleted: {
         // Initialize the plasmoid
-        console.log("Kimai Tracker plasmoid loaded")
+        if (kimaiUrl && apiToken) {
+            loadProjects()
+            fetchActiveTimesheet()
+        }
+    }
+
+    // Reload projects when configuration changes
+    onKimaiUrlChanged: {
+        if (kimaiUrl && apiToken) {
+            loadProjects()
+            fetchActiveTimesheet()
+        }
+    }
+
+    onApiTokenChanged: {
+        if (kimaiUrl && apiToken) {
+            loadProjects()
+            fetchActiveTimesheet()
+        }
     }
 }
