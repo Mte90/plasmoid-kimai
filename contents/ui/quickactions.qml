@@ -64,6 +64,11 @@ KCM.SimpleKCM {
     }
 
     function toggleProjectActivity(projectId, activityId) {
+        // Validate inputs
+        if (!projectId || !activityId || isNaN(projectId) || isNaN(activityId)) {
+            return
+        }
+        
         var current = quickActionProjectsField.text ? quickActionProjectsField.text.split(';') : []
         var entry = projectId + ":" + activityId
         var index = current.indexOf(entry)
@@ -78,6 +83,11 @@ KCM.SimpleKCM {
     }
 
     function isActivitySelected(projectId, activityId) {
+        // Validate inputs
+        if (!projectId || !activityId || isNaN(projectId) || isNaN(activityId)) {
+            return false
+        }
+        
         var current = quickActionProjectsField.text ? quickActionProjectsField.text.split(';') : []
         var entry = projectId + ":" + activityId
         return current.indexOf(entry) !== -1

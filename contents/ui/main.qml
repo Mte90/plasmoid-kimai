@@ -355,7 +355,7 @@ PlasmoidItem {
             var projectId = parseInt(pair[0])
             var activityId = parseInt(pair[1])
             
-            if (!projectId || !activityId) continue
+            if (!projectId || !activityId || isNaN(projectId) || isNaN(activityId)) continue
             
             uniqueProjectIds[projectId] = true
             if (!targetActivities[projectId]) {
@@ -364,19 +364,32 @@ PlasmoidItem {
             targetActivities[projectId].push(activityId)
         }
         
+        // Create project ID to name map for O(n) lookup
+        var projectIdToName = {}
+        for (var j = 0; j < projects.length; j++) {
+            projectIdToName[projects[j].id] = projects[j].name
+        }
+        
+        // Count how many projects we need to load
+        var projectCount = 0
+        for (var projId in uniqueProjectIds) {
+            if (uniqueProjectIds.hasOwnProperty(projId)) {
+                projectCount++
+            }
+        }
+        
+        if (projectCount === 0) {
+            return
+        }
+        
+        var loadedCount = 0
+        var tempActivitiesList = []
+        
         // Second pass: load activities for each unique project
         for (var projId in uniqueProjectIds) {
             if (uniqueProjectIds.hasOwnProperty(projId)) {
                 var projectIdNum = parseInt(projId)
-                
-                // Find project name
-                var projectName = ""
-                for (var j = 0; j < projects.length; j++) {
-                    if (projects[j].id === projectIdNum) {
-                        projectName = projects[j].name
-                        break
-                    }
-                }
+                var projectName = projectIdToName[projectIdNum] || ""
                 
                 // Load activities for this project
                 (function(pid, pname, targetActIds) {
@@ -386,7 +399,7 @@ PlasmoidItem {
                                 var activity = loadedActivities[k]
                                 // Check if this activity is in our target list
                                 if (targetActIds.indexOf(activity.id) !== -1) {
-                                    quickActionActivitiesList.push({
+                                    tempActivitiesList.push({
                                         projectId: pid,
                                         projectName: pname,
                                         activityId: activity.id,
@@ -394,8 +407,12 @@ PlasmoidItem {
                                     })
                                 }
                             }
-                            // Force update
-                            quickActionActivitiesList = quickActionActivitiesList
+                        }
+                        
+                        // Increment counter and update list only when all are loaded
+                        loadedCount++
+                        if (loadedCount === projectCount) {
+                            quickActionActivitiesList = tempActivitiesList
                         }
                     })
                 })(projectIdNum, projectName, targetActivities[projId])
