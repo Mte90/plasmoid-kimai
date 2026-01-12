@@ -10,6 +10,8 @@ KCM.SimpleKCM {
 
     property alias cfg_quickActionProjects: quickActionProjectsField.text
     property var availableProjects: []
+    property var projectActivities: ({})
+    property int selectedProjectIndex: -1
 
     Component.onCompleted: {
         loadProjects()
@@ -28,7 +30,7 @@ KCM.SimpleKCM {
             if (projects) {
                 availableProjects = projects
                 updateProjectsList()
-                statusLabel.text = i18n("Loaded %1 projects", availableProjects.length)
+                statusLabel.text = i18n("Loaded %1 projects. Click on a project to select activities.", availableProjects.length)
             } else {
                 statusLabel.text = i18n("Error loading projects. Please check your connection settings.")
             }
@@ -39,90 +41,163 @@ KCM.SimpleKCM {
         projectsListView.model = availableProjects
     }
 
-    function getSelectedProjects() {
-        var selected = []
-        for (var i = 0; i < availableProjects.length; i++) {
-            if (availableProjects[i].selected) {
-                selected.push(availableProjects[i].id)
-            }
+    function loadActivitiesForProject(projectId, projectIndex) {
+        var kimaiUrl = plasmoid.configuration.kimaiUrl
+        var apiToken = plasmoid.configuration.apiToken
+        
+        if (!kimaiUrl || !apiToken) {
+            return
         }
-        return selected
+
+        statusLabel.text = i18n("Loading activities...")
+        
+        KimaiApi.loadActivities(kimaiUrl, apiToken, projectId, function(activities) {
+            if (activities) {
+                projectActivities[projectId] = activities
+                selectedProjectIndex = projectIndex
+                activitiesListView.model = activities
+                statusLabel.text = i18n("Loaded %1 activities for project", activities.length)
+            } else {
+                statusLabel.text = i18n("Error loading activities")
+            }
+        })
     }
 
-    ColumnLayout {
+    function toggleProjectActivity(projectId, activityId) {
+        var current = quickActionProjectsField.text ? quickActionProjectsField.text.split(';') : []
+        var entry = projectId + ":" + activityId
+        var index = current.indexOf(entry)
+        
+        if (index === -1) {
+            current.push(entry)
+        } else {
+            current.splice(index, 1)
+        }
+        
+        quickActionProjectsField.text = current.filter(function(e) { return e !== '' }).join(';')
+    }
+
+    function isActivitySelected(projectId, activityId) {
+        var current = quickActionProjectsField.text ? quickActionProjectsField.text.split(';') : []
+        var entry = projectId + ":" + activityId
+        return current.indexOf(entry) !== -1
+    }
+
+    RowLayout {
         anchors.fill: parent
         spacing: Kirigami.Units.largeSpacing
 
-        // Description
-        QQC2.Label {
-            Layout.fillWidth: true
-            text: i18n("Select projects to show as quick action buttons in the panel")
-            wrapMode: Text.WordWrap
-            font.bold: true
-        }
-
-        QQC2.Label {
-            Layout.fillWidth: true
-            text: i18n("Quick action buttons allow you to start tracking time for a project with a single click. The buttons will appear in the plasmoid's interface.")
-            wrapMode: Text.WordWrap
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
-        }
-
-        // Status label
-        QQC2.Label {
-            id: statusLabel
-            Layout.fillWidth: true
-            text: i18n("Loading projects...")
-            wrapMode: Text.WordWrap
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-        }
-
-        // Projects list
-        QQC2.ScrollView {
-            Layout.fillWidth: true
+        // Left side - Projects
+        ColumnLayout {
             Layout.fillHeight: true
-            Layout.preferredHeight: 300
+            Layout.preferredWidth: parent.width / 2
+            spacing: Kirigami.Units.smallSpacing
 
-            ListView {
-                id: projectsListView
-                clip: true
-                
-                delegate: QQC2.CheckDelegate {
-                    width: ListView.view.width
-                    text: modelData.name
-                    checked: {
-                        var ids = quickActionProjectsField.text.split(',')
-                        return ids.indexOf(String(modelData.id)) !== -1
-                    }
-                    onToggled: {
-                        var ids = quickActionProjectsField.text ? quickActionProjectsField.text.split(',') : []
-                        var idStr = String(modelData.id)
-                        var index = ids.indexOf(idStr)
-                        
-                        if (checked && index === -1) {
-                            ids.push(idStr)
-                        } else if (!checked && index !== -1) {
-                            ids.splice(index, 1)
+            QQC2.Label {
+                Layout.fillWidth: true
+                text: i18n("Projects")
+                font.bold: true
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                text: i18n("Click on a project to select its activities")
+                wrapMode: Text.WordWrap
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                opacity: 0.7
+            }
+
+            QQC2.ScrollView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                ListView {
+                    id: projectsListView
+                    clip: true
+                    
+                    delegate: QQC2.ItemDelegate {
+                        width: ListView.view.width
+                        text: modelData.name
+                        highlighted: index === selectedProjectIndex
+                        onClicked: {
+                            loadActivitiesForProject(modelData.id, index)
                         }
-                        
-                        quickActionProjectsField.text = ids.filter(function(id) { return id !== '' }).join(',')
+                    }
+                }
+            }
+
+            QQC2.Button {
+                text: i18n("Reload Projects")
+                icon.name: "view-refresh"
+                onClicked: loadProjects()
+            }
+        }
+
+        Kirigami.Separator {
+            Layout.fillHeight: true
+        }
+
+        // Right side - Activities
+        ColumnLayout {
+            Layout.fillHeight: true
+            Layout.preferredWidth: parent.width / 2
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                text: i18n("Activities")
+                font.bold: true
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                text: i18n("Select activities to show as quick action buttons")
+                wrapMode: Text.WordWrap
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                opacity: 0.7
+            }
+
+            QQC2.Label {
+                id: statusLabel
+                Layout.fillWidth: true
+                text: i18n("Loading projects...")
+                wrapMode: Text.WordWrap
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+
+            QQC2.ScrollView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                ListView {
+                    id: activitiesListView
+                    clip: true
+                    
+                    delegate: QQC2.CheckDelegate {
+                        width: ListView.view.width
+                        text: modelData.name
+                        checked: {
+                            if (selectedProjectIndex >= 0 && selectedProjectIndex < availableProjects.length) {
+                                var projectId = availableProjects[selectedProjectIndex].id
+                                return isActivitySelected(projectId, modelData.id)
+                            }
+                            return false
+                        }
+                        onToggled: {
+                            if (selectedProjectIndex >= 0 && selectedProjectIndex < availableProjects.length) {
+                                var projectId = availableProjects[selectedProjectIndex].id
+                                toggleProjectActivity(projectId, modelData.id)
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // Hidden field to store selected project IDs
+        // Hidden field to store selected project:activity pairs
         QQC2.TextField {
             id: quickActionProjectsField
             visible: false
-        }
-
-        // Reload button
-        QQC2.Button {
-            text: i18n("Reload Projects")
-            icon.name: "view-refresh"
-            onClicked: loadProjects()
         }
     }
 }
