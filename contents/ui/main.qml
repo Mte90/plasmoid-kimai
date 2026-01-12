@@ -156,7 +156,7 @@ Item {
                 id: projectComboBox
                 Layout.fillWidth: true
                 enabled: !isTracking && kimaiUrl && apiToken
-                model: [i18n("Select a project...")]
+                model: [i18n("Select a project..."), i18n("Example Project 1"), i18n("Example Project 2")]
                 currentIndex: 0
             }
 
@@ -164,7 +164,7 @@ Item {
                 id: activityComboBox
                 Layout.fillWidth: true
                 enabled: !isTracking && kimaiUrl && apiToken && projectComboBox.currentIndex > 0
-                model: [i18n("Select an activity...")]
+                model: [i18n("Select an activity..."), i18n("Development"), i18n("Meeting"), i18n("Documentation")]
                 currentIndex: 0
             }
 
@@ -177,7 +177,7 @@ Item {
                     Layout.fillWidth: true
                     text: isTracking ? i18n("Stop Tracking") : i18n("Start Tracking")
                     icon.name: isTracking ? "media-playback-stop" : "media-playback-start"
-                    enabled: kimaiUrl && apiToken
+                    enabled: kimaiUrl && apiToken && (isTracking || (projectComboBox.currentIndex > 0 && activityComboBox.currentIndex > 0))
                     onClicked: {
                         if (isTracking) {
                             stopTracking()
@@ -195,7 +195,7 @@ Item {
             // Info message
             PlasmaComponents3.Label {
                 Layout.fillWidth: true
-                text: i18n("Note: API integration not yet implemented. This is a UI preview.")
+                text: i18n("Note: This is a preview version. Kimai API integration is not yet implemented. Example projects/activities are shown for demonstration.")
                 wrapMode: Text.WordWrap
                 font.pointSize: PlasmaCore.Theme.smallestFont.pointSize
                 font.italic: true
@@ -216,6 +216,10 @@ Item {
 
     function startTracking() {
         if (!kimaiUrl || !apiToken) {
+            return
+        }
+
+        if (projectComboBox.currentIndex <= 0 || activityComboBox.currentIndex <= 0) {
             return
         }
 

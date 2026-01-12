@@ -39,14 +39,13 @@ Kirigami.FormLayout {
         Kirigami.FormData.isSection: true
     }
 
-    // Connection test (placeholder)
-    Button {
-        text: i18n("Test Connection")
-        icon.name: "network-connect"
-        enabled: kimaiUrlField.text && apiTokenField.text
-        onClicked: {
-            // TODO: Implement connection test
-            console.log("Testing connection to:", kimaiUrlField.text)
-        }
+    // Info about connection test
+    Label {
+        Layout.fillWidth: true
+        text: i18n("Note: Connection testing is not yet implemented. The plasmoid will attempt to connect when you configure these settings.")
+        wrapMode: Text.WordWrap
+        font.pointSize: Kirigami.Theme.smallFont.pointSize
+        font.italic: true
+        opacity: 0.7
     }
 }
