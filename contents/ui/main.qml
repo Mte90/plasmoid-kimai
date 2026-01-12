@@ -25,6 +25,7 @@ PlasmoidItem {
     property var activities: []
     property var quickActionProjectsList: []
     property var quickActionActivitiesList: []
+    property int currentQuickActionIndex: 0
 
     // Tooltip
     toolTipMainText: "Kimai Tracker"
@@ -32,7 +33,10 @@ PlasmoidItem {
         if (isTracking) {
             return i18n("%1 - Tracking (%2)", currentProject, formatTime(elapsedSeconds))
         } else if (quickActionActivitiesList.length > 0) {
-            return i18n("%1 quick actions configured", quickActionActivitiesList.length)
+            // Ensure index is within bounds
+            var index = currentQuickActionIndex % quickActionActivitiesList.length
+            var nextAction = quickActionActivitiesList[index]
+            return i18n("Click to start: %1 - %2", nextAction.projectName, nextAction.activityName)
         } else {
             return i18n("Click to start tracking")
         }
@@ -80,10 +84,12 @@ PlasmoidItem {
             id: compactMouse
             anchors.fill: parent
             hoverEnabled: true
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
             onClicked: function(mouse) {
                 if (mouse.button === Qt.LeftButton) {
                     handleCompactClick()
+                } else if (mouse.button === Qt.MiddleButton) {
+                    handleMiddleClick()
                 } else if (mouse.button === Qt.RightButton) {
                     plasmoid.expanded = !plasmoid.expanded
                 }
@@ -275,16 +281,30 @@ PlasmoidItem {
     }
 
     // Helper functions
+    function handleMiddleClick() {
+        // Cycle through quick actions without starting them
+        if (quickActionActivitiesList.length > 1 && !isTracking) {
+            currentQuickActionIndex = (currentQuickActionIndex + 1) % quickActionActivitiesList.length
+        }
+    }
+
     function handleCompactClick() {
         if (isTracking) {
             // Stop current tracking
             stopTracking()
         } else {
-            // Start tracking first quick action, or expand if none configured
+            // Cycle through quick actions, or expand if none configured
             if (quickActionActivitiesList.length > 0 && kimaiUrl && apiToken) {
-                var firstAction = quickActionActivitiesList[0]
-                if (firstAction && firstAction.projectId && firstAction.activityId) {
-                    startTrackingProjectActivity(firstAction.projectId, firstAction.projectName, firstAction.activityId, firstAction.activityName)
+                // Ensure currentQuickActionIndex is within bounds
+                if (currentQuickActionIndex >= quickActionActivitiesList.length) {
+                    currentQuickActionIndex = 0
+                }
+                
+                var action = quickActionActivitiesList[currentQuickActionIndex]
+                if (action && action.projectId && action.activityId) {
+                    startTrackingProjectActivity(action.projectId, action.projectName, action.activityId, action.activityName)
+                    // Move to next action for next click
+                    currentQuickActionIndex = (currentQuickActionIndex + 1) % quickActionActivitiesList.length
                 } else {
                     plasmoid.expanded = !plasmoid.expanded
                 }
