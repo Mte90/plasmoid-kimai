@@ -72,7 +72,7 @@ function loadProjects(kimaiUrl, apiToken, callback) {
         return
     }
 
-    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/projects?visible=3&order=name&orderBy=ASC", apiToken, false)
+    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/projects?visible=3&order=ASC&orderBy=name", apiToken, false)
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -107,7 +107,7 @@ function loadActivities(kimaiUrl, apiToken, projectId, callback) {
         return
     }
 
-    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/activities?project=" + projectId + "&visible=3&order=name&orderBy=ASC", apiToken, false)
+    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/activities?project=" + projectId + "&visible=3&order=ASC&orderBy=name", apiToken, false)
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
