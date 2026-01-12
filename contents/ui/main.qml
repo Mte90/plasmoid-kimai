@@ -10,7 +10,7 @@ PlasmoidItem {
     id: root
 
     // Constants
-    readonly property int INVALID_TIMESHEET_ID: -1
+    readonly property int invalid_timesheet_id: -1
 
     // Configuration properties
     property string kimaiUrl: plasmoid.configuration.kimaiUrl
@@ -20,7 +20,7 @@ PlasmoidItem {
     property string currentProject: ""
     property string currentActivity: ""
     property int elapsedSeconds: 0
-    property int currentTimeSheetId: INVALID_TIMESHEET_ID
+    property int currentTimeSheetId: invalid_timesheet_id
     property var projects: []
     property var activities: []
     property var quickActionProjectsList: []
@@ -283,7 +283,7 @@ PlasmoidItem {
 
     function resetTrackingState() {
         isTracking = false
-        currentTimeSheetId = INVALID_TIMESHEET_ID
+        currentTimeSheetId = invalid_timesheet_id
         currentProject = ""
         currentActivity = ""
         elapsedSeconds = 0
@@ -492,7 +492,7 @@ PlasmoidItem {
                                 elapsedSeconds = Math.floor((now.getTime() - beginDate.getTime()) / 1000)
                             }
                         } else {
-                            if (isTracking && currentTimeSheetId !== INVALID_TIMESHEET_ID) {
+                            if (isTracking && currentTimeSheetId !== invalid_timesheet_id) {
                                 // Tracking stopped remotely
                                 resetTrackingState()
                             }
@@ -561,7 +561,7 @@ PlasmoidItem {
     }
 
     function stopTracking() {
-        if (!kimaiUrl || !apiToken || currentTimeSheetId === INVALID_TIMESHEET_ID) {
+        if (!kimaiUrl || !apiToken || currentTimeSheetId === invalid_timesheet_id) {
             return
         }
 
