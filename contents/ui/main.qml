@@ -109,7 +109,7 @@ PlasmoidItem {
                 }
             }
 
-            PlasmaComponents3.Separator {
+            Kirigami.Separator {
                 Layout.fillWidth: true
             }
 
@@ -159,7 +159,7 @@ PlasmoidItem {
                 }
             }
 
-            PlasmaComponents3.Separator {
+            Kirigami.Separator {
                 Layout.fillWidth: true
             }
 
@@ -196,7 +196,7 @@ PlasmoidItem {
                 }
             }
 
-            PlasmaComponents3.Separator {
+            Kirigami.Separator {
                 Layout.fillWidth: true
                 visible: quickActionProjectsList.length > 0
             }
