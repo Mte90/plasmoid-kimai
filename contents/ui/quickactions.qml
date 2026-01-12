@@ -3,6 +3,7 @@ import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
+import "kimaiapi.js" as KimaiApi
 
 KCM.SimpleKCM {
     id: quickActionsConfig
@@ -23,28 +24,15 @@ KCM.SimpleKCM {
             return
         }
 
-        var xhr = new XMLHttpRequest()
-        xhr.open("GET", kimaiUrl + "/api/projects?", true)
-        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
-        xhr.setRequestHeader("Content-Type", "application/json")
-        
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    try {
-                        availableProjects = JSON.parse(xhr.responseText)
-                        updateProjectsList()
-                        statusLabel.text = i18n("Loaded %1 projects", availableProjects.length)
-                    } catch (e) {
-                        statusLabel.text = i18n("Error parsing projects: %1", e)
-                    }
-                } else {
-                    statusLabel.text = i18n("Error loading projects: %1, %2", xhr.status, kimaiUrl + "/api/projects")
-                }
+        KimaiApi.loadProjects(kimaiUrl, apiToken, function(projects) {
+            if (projects) {
+                availableProjects = projects
+                updateProjectsList()
+                statusLabel.text = i18n("Loaded %1 projects", availableProjects.length)
+            } else {
+                statusLabel.text = i18n("Error loading projects. Please check your connection settings.")
             }
-        }
-        
-        xhr.send()
+        })
     }
 
     function updateProjectsList() {
