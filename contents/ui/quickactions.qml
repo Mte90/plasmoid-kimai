@@ -3,6 +3,7 @@ import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
+import "kimaiapi.js" as KimaiApi
 
 KCM.SimpleKCM {
     id: quickActionsConfig
@@ -23,28 +24,15 @@ KCM.SimpleKCM {
             return
         }
 
-        var xhr = new XMLHttpRequest()
-        xhr.open("GET", kimaiUrl + "/api/projects?", true)
-        xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
-        xhr.setRequestHeader("Content-Type", "application/json")
-        
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    try {
-                        availableProjects = JSON.parse(xhr.responseText)
-                        updateProjectsList()
-                        statusLabel.text = i18n("Loaded %1 projects", availableProjects.length)
-                    } catch (e) {
-                        statusLabel.text = i18n("Error parsing projects: %1", e)
-                    }
-                } else {
-                    statusLabel.text = i18n("Error loading projects: %1, %2", xhr.status, kimaiUrl + "/api/projects")
-                }
+        KimaiApi.loadProjects(kimaiUrl, apiToken, function(projects) {
+            if (projects) {
+                availableProjects = projects
+                updateProjectsList()
+                statusLabel.text = i18n("Loaded %1 projects", availableProjects.length)
+            } else {
+                statusLabel.text = i18n("Error loading projects. Please check your connection settings.")
             }
-        }
-        
-        xhr.send()
+        })
     }
 
     function updateProjectsList() {
@@ -61,7 +49,10 @@ KCM.SimpleKCM {
         return selected
     }
 
-    Kirigami.FormLayout {
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: Kirigami.Units.largeSpacing
+
         // Description
         QQC2.Label {
             Layout.fillWidth: true
@@ -72,7 +63,6 @@ KCM.SimpleKCM {
 
         QQC2.Label {
             Layout.fillWidth: true
-            Layout.topMargin: Kirigami.Units.smallSpacing
             text: i18n("Quick action buttons allow you to start tracking time for a project with a single click. The buttons will appear in the plasmoid's interface.")
             wrapMode: Text.WordWrap
             font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -83,7 +73,6 @@ KCM.SimpleKCM {
         QQC2.Label {
             id: statusLabel
             Layout.fillWidth: true
-            Layout.topMargin: Kirigami.Units.largeSpacing
             text: i18n("Loading projects...")
             wrapMode: Text.WordWrap
             font.pointSize: Kirigami.Theme.smallFont.pointSize
