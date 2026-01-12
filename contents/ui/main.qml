@@ -344,8 +344,10 @@ PlasmoidItem {
 
         // Parse project:activity pairs separated by semicolons
         var pairs = quickActionProjects.split(';')
-        var projectActivityMap = {}
+        var uniqueProjectIds = {}
+        var targetActivities = {}
         
+        // First pass: collect all unique project IDs and their target activities
         for (var i = 0; i < pairs.length; i++) {
             var pair = pairs[i].split(':')
             if (pair.length !== 2) continue
@@ -355,59 +357,48 @@ PlasmoidItem {
             
             if (!projectId || !activityId) continue
             
-            // Find the project
-            var project = null
-            for (var j = 0; j < projects.length; j++) {
-                if (projects[j].id === projectId) {
-                    project = projects[j]
-                    break
-                }
+            uniqueProjectIds[projectId] = true
+            if (!targetActivities[projectId]) {
+                targetActivities[projectId] = []
             }
-            
-            if (project) {
-                // Store for later when activities are loaded
-                if (!projectActivityMap[projectId]) {
-                    projectActivityMap[projectId] = []
+            targetActivities[projectId].push(activityId)
+        }
+        
+        // Second pass: load activities for each unique project
+        for (var projId in uniqueProjectIds) {
+            if (uniqueProjectIds.hasOwnProperty(projId)) {
+                var projectIdNum = parseInt(projId)
+                
+                // Find project name
+                var projectName = ""
+                for (var j = 0; j < projects.length; j++) {
+                    if (projects[j].id === projectIdNum) {
+                        projectName = projects[j].name
+                        break
+                    }
                 }
-                projectActivityMap[projectId].push(activityId)
                 
                 // Load activities for this project
-                loadActivitiesForProjectId(projectId, function(loadedActivities) {
-                    if (loadedActivities) {
-                        for (var k = 0; k < loadedActivities.length; k++) {
-                            var activity = loadedActivities[k]
-                            // Check if this activity is in our selected list
-                            for (var m = 0; m < pairs.length; m++) {
-                                var checkPair = pairs[m].split(':')
-                                if (checkPair.length === 2) {
-                                    var checkProjectId = parseInt(checkPair[0])
-                                    var checkActivityId = parseInt(checkPair[1])
-                                    
-                                    if (activity.project === checkProjectId && activity.id === checkActivityId) {
-                                        // Find project name
-                                        var projectName = ""
-                                        for (var n = 0; n < projects.length; n++) {
-                                            if (projects[n].id === checkProjectId) {
-                                                projectName = projects[n].name
-                                                break
-                                            }
-                                        }
-                                        
-                                        quickActionActivitiesList.push({
-                                            projectId: checkProjectId,
-                                            projectName: projectName,
-                                            activityId: checkActivityId,
-                                            activityName: activity.name
-                                        })
-                                        break
-                                    }
+                (function(pid, pname, targetActIds) {
+                    loadActivitiesForProjectId(pid, function(loadedActivities) {
+                        if (loadedActivities) {
+                            for (var k = 0; k < loadedActivities.length; k++) {
+                                var activity = loadedActivities[k]
+                                // Check if this activity is in our target list
+                                if (targetActIds.indexOf(activity.id) !== -1) {
+                                    quickActionActivitiesList.push({
+                                        projectId: pid,
+                                        projectName: pname,
+                                        activityId: activity.id,
+                                        activityName: activity.name
+                                    })
                                 }
                             }
+                            // Force update
+                            quickActionActivitiesList = quickActionActivitiesList
                         }
-                        // Force update
-                        quickActionActivitiesList = quickActionActivitiesList
-                    }
-                })
+                    })
+                })(projectIdNum, projectName, targetActivities[projId])
             }
         }
     }
