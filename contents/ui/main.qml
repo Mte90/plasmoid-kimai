@@ -36,7 +36,11 @@ PlasmoidItem {
             // Ensure index is within bounds
             var index = currentQuickActionIndex % quickActionActivitiesList.length
             var nextAction = quickActionActivitiesList[index]
-            return i18n("Click to start: %1 - %2", nextAction.projectName, nextAction.activityName)
+            if (nextAction) {
+                return i18n("Click to start: %1 - %2", nextAction.projectName, nextAction.activityName)
+            } else {
+                return i18n("%1 quick actions configured", quickActionActivitiesList.length)
+            }
         } else {
             return i18n("Click to start tracking")
         }
@@ -283,7 +287,7 @@ PlasmoidItem {
     // Helper functions
     function handleMiddleClick() {
         // Cycle through quick actions without starting them
-        if (quickActionActivitiesList.length > 1 && !isTracking) {
+        if (quickActionActivitiesList.length > 0 && !isTracking) {
             currentQuickActionIndex = (currentQuickActionIndex + 1) % quickActionActivitiesList.length
         }
     }
@@ -295,12 +299,7 @@ PlasmoidItem {
         } else {
             // Cycle through quick actions, or expand if none configured
             if (quickActionActivitiesList.length > 0 && kimaiUrl && apiToken) {
-                // Ensure currentQuickActionIndex is within bounds
-                if (currentQuickActionIndex >= quickActionActivitiesList.length) {
-                    currentQuickActionIndex = 0
-                }
-                
-                var action = quickActionActivitiesList[currentQuickActionIndex]
+                var action = quickActionActivitiesList[currentQuickActionIndex % quickActionActivitiesList.length]
                 if (action && action.projectId && action.activityId) {
                     startTrackingProjectActivity(action.projectId, action.projectName, action.activityId, action.activityName)
                     // Move to next action for next click
