@@ -24,18 +24,15 @@ PlasmoidItem {
     property var projects: []
     property var activities: []
     property var quickActionProjectsList: []
+    property var quickActionActivitiesList: []
 
     // Tooltip
     toolTipMainText: "Kimai Tracker"
     toolTipSubText: {
         if (isTracking) {
             return i18n("%1 - Tracking (%2)", currentProject, formatTime(elapsedSeconds))
-        } else if (quickActionProjectsList.length > 0) {
-            var projectNames = []
-            for (var i = 0; i < quickActionProjectsList.length; i++) {
-                projectNames.push(quickActionProjectsList[i].name)
-            }
-            return projectNames.join(", ")
+        } else if (quickActionActivitiesList.length > 0) {
+            return i18n("%1 quick actions configured", quickActionActivitiesList.length)
         } else {
             return i18n("Click to start tracking")
         }
@@ -190,28 +187,28 @@ PlasmoidItem {
                 Layout.fillWidth: true
                 level: 4
                 text: i18n("Quick Actions")
-                visible: quickActionProjectsList.length > 0
+                visible: quickActionActivitiesList.length > 0
             }
 
-            // Quick action buttons for configured projects
+            // Quick action buttons for configured project-activity pairs
             Flow {
                 Layout.fillWidth: true
                 spacing: Kirigami.Units.smallSpacing
-                visible: quickActionProjectsList.length > 0
+                visible: quickActionActivitiesList.length > 0
 
                 Repeater {
-                    model: quickActionProjectsList
+                    model: quickActionActivitiesList
 
                     PlasmaComponents3.Button {
-                        text: modelData.name
-                        icon.name: isTracking && currentProject === modelData.name ? "media-playback-stop" : "media-playback-start"
+                        text: modelData.projectName + " - " + modelData.activityName
+                        icon.name: isTracking && currentProject === modelData.projectName && currentActivity === modelData.activityName ? "media-playback-stop" : "media-playback-start"
                         enabled: kimaiUrl && apiToken
-                        highlighted: isTracking && currentProject === modelData.name
+                        highlighted: isTracking && currentProject === modelData.projectName && currentActivity === modelData.activityName
                         onClicked: {
-                            if (isTracking && currentProject === modelData.name) {
+                            if (isTracking && currentProject === modelData.projectName && currentActivity === modelData.activityName) {
                                 stopTracking()
                             } else if (!isTracking) {
-                                startTrackingProject(modelData.id, modelData.name)
+                                startTrackingProjectActivity(modelData.projectId, modelData.projectName, modelData.activityId, modelData.activityName)
                             }
                         }
                     }
@@ -220,14 +217,14 @@ PlasmoidItem {
 
             Kirigami.Separator {
                 Layout.fillWidth: true
-                visible: quickActionProjectsList.length > 0
+                visible: quickActionActivitiesList.length > 0
             }
 
             // Manual Project selection
             PlasmaExtras.Heading {
                 Layout.fillWidth: true
                 level: 4
-                text: quickActionProjectsList.length > 0 ? i18n("Manual Selection") : i18n("Quick Actions")
+                text: quickActionActivitiesList.length > 0 ? i18n("Manual Selection") : i18n("Quick Actions")
             }
 
             PlasmaComponents3.ComboBox {
@@ -283,11 +280,11 @@ PlasmoidItem {
             // Stop current tracking
             stopTracking()
         } else {
-            // Start tracking first quick action project, or expand if none configured
-            if (quickActionProjectsList.length > 0 && kimaiUrl && apiToken) {
-                var firstProject = quickActionProjectsList[0]
-                if (firstProject && firstProject.id && firstProject.name) {
-                    startTrackingProject(firstProject.id, firstProject.name)
+            // Start tracking first quick action, or expand if none configured
+            if (quickActionActivitiesList.length > 0 && kimaiUrl && apiToken) {
+                var firstAction = quickActionActivitiesList[0]
+                if (firstAction && firstAction.projectId && firstAction.activityId) {
+                    startTrackingProjectActivity(firstAction.projectId, firstAction.projectName, firstAction.activityId, firstAction.activityName)
                 } else {
                     plasmoid.expanded = !plasmoid.expanded
                 }
@@ -339,47 +336,112 @@ PlasmoidItem {
 
     function updateQuickActionProjects() {
         quickActionProjectsList = []
+        quickActionActivitiesList = []
+        
         if (!quickActionProjects || !projects.length) {
             return
         }
 
-        var selectedIds = quickActionProjects.split(',')
-        for (var i = 0; i < selectedIds.length; i++) {
-            var projectId = parseInt(selectedIds[i])
-            if (!projectId) continue
+        // Parse project:activity pairs separated by semicolons
+        var pairs = quickActionProjects.split(';')
+        var uniqueProjectIds = {}
+        var targetActivities = {}
+        
+        // First pass: collect all unique project IDs and their target activities
+        for (var i = 0; i < pairs.length; i++) {
+            var pair = pairs[i].split(':')
+            if (pair.length !== 2) continue
             
-            for (var j = 0; j < projects.length; j++) {
-                if (projects[j].id === projectId) {
-                    quickActionProjectsList.push({
-                        id: projects[j].id,
-                        name: projects[j].name
+            var projectId = parseInt(pair[0])
+            var activityId = parseInt(pair[1])
+            
+            if (isNaN(projectId) || isNaN(activityId)) continue
+            
+            uniqueProjectIds[projectId] = true
+            if (!targetActivities[projectId]) {
+                targetActivities[projectId] = []
+            }
+            targetActivities[projectId].push(activityId)
+        }
+        
+        // Create project ID to name map for O(n) lookup
+        var projectIdToName = {}
+        for (var j = 0; j < projects.length; j++) {
+            projectIdToName[projects[j].id] = projects[j].name
+        }
+        
+        // Count how many projects we need to load
+        var projectCount = 0
+        for (var projId in uniqueProjectIds) {
+            if (uniqueProjectIds.hasOwnProperty(projId)) {
+                projectCount++
+            }
+        }
+        
+        if (projectCount === 0) {
+            return
+        }
+        
+        var loadedCount = 0
+        var activitiesByProject = {}
+        
+        // Second pass: load activities for each unique project
+        for (var projId in uniqueProjectIds) {
+            if (uniqueProjectIds.hasOwnProperty(projId)) {
+                var projectIdNum = parseInt(projId)
+                var projectName = projectIdToName[projectIdNum] || ""
+                
+                // Load activities for this project
+                (function(pid, pname, targetActIds) {
+                    loadActivitiesForProjectId(pid, function(loadedActivities) {
+                        var localActivities = []
+                        if (loadedActivities) {
+                            for (var k = 0; k < loadedActivities.length; k++) {
+                                var activity = loadedActivities[k]
+                                // Check if this activity is in our target list
+                                if (targetActIds.indexOf(activity.id) !== -1) {
+                                    localActivities.push({
+                                        projectId: pid,
+                                        projectName: pname,
+                                        activityId: activity.id,
+                                        activityName: activity.name
+                                    })
+                                }
+                            }
+                        }
+                        
+                        // Store this project's activities
+                        activitiesByProject[pid] = localActivities
+                        
+                        // Increment counter and merge all results when all are loaded
+                        loadedCount++
+                        if (loadedCount === projectCount) {
+                            var finalList = []
+                            for (var p in activitiesByProject) {
+                                if (activitiesByProject.hasOwnProperty(p)) {
+                                    finalList = finalList.concat(activitiesByProject[p])
+                                }
+                            }
+                            quickActionActivitiesList = finalList
+                        }
                     })
-                    break
-                }
+                })(projectIdNum, projectName, targetActivities[projId])
             }
         }
     }
 
-    function startTrackingProject(projectId, projectName) {
+    function startTrackingProjectActivity(projectId, projectName, activityId, activityName) {
         if (!kimaiUrl || !apiToken || isTracking) {
             return
         }
 
-        // Get default activity for the project
-        KimaiApi.loadActivities(kimaiUrl, apiToken, projectId, function(loadedActivities) {
-            if (loadedActivities && loadedActivities.length > 0) {
-                var activityId = loadedActivities[0].id
-                var activityName = loadedActivities[0].name
-                
-                KimaiApi.startTracking(kimaiUrl, apiToken, projectId, activityId, function(success, response) {
-                    if (success && response) {
-                        isTracking = true
-                        currentTimeSheetId = response.id
-                        currentProject = projectName
-                        currentActivity = activityName
-                        elapsedSeconds = 0
-                    }
-                })
+        KimaiApi.startTracking(kimaiUrl, apiToken, projectId, activityId, function(success, response) {
+            if (success && response) {
+                isTracking = true
+                currentTimeSheetId = response.id
+                currentProject = projectName
+                currentActivity = activityName
+                elapsedSeconds = 0
             }
         })
     }
@@ -400,7 +462,6 @@ PlasmoidItem {
         KimaiApi.loadProjects(kimaiUrl, apiToken, function(loadedProjects) {
             if (loadedProjects) {
                 projects = loadedProjects
-                projectComboBox.model = getProjectNames()
                 updateQuickActionProjects()
             }
         })
