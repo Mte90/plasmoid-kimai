@@ -49,7 +49,10 @@ KCM.SimpleKCM {
         return selected
     }
 
-    Kirigami.FormLayout {
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: Kirigami.Units.largeSpacing
+
         // Description
         QQC2.Label {
             Layout.fillWidth: true
@@ -60,7 +63,6 @@ KCM.SimpleKCM {
 
         QQC2.Label {
             Layout.fillWidth: true
-            Layout.topMargin: Kirigami.Units.smallSpacing
             text: i18n("Quick action buttons allow you to start tracking time for a project with a single click. The buttons will appear in the plasmoid's interface.")
             wrapMode: Text.WordWrap
             font.pointSize: Kirigami.Theme.smallFont.pointSize
@@ -71,7 +73,6 @@ KCM.SimpleKCM {
         QQC2.Label {
             id: statusLabel
             Layout.fillWidth: true
-            Layout.topMargin: Kirigami.Units.largeSpacing
             text: i18n("Loading projects...")
             wrapMode: Text.WordWrap
             font.pointSize: Kirigami.Theme.smallFont.pointSize
