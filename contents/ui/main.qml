@@ -355,7 +355,7 @@ PlasmoidItem {
             var projectId = parseInt(pair[0])
             var activityId = parseInt(pair[1])
             
-            if (!projectId || !activityId || isNaN(projectId) || isNaN(activityId)) continue
+            if (isNaN(projectId) || isNaN(activityId)) continue
             
             uniqueProjectIds[projectId] = true
             if (!targetActivities[projectId]) {
@@ -383,7 +383,7 @@ PlasmoidItem {
         }
         
         var loadedCount = 0
-        var tempActivitiesList = []
+        var activitiesByProject = {}
         
         // Second pass: load activities for each unique project
         for (var projId in uniqueProjectIds) {
@@ -394,12 +394,13 @@ PlasmoidItem {
                 // Load activities for this project
                 (function(pid, pname, targetActIds) {
                     loadActivitiesForProjectId(pid, function(loadedActivities) {
+                        var localActivities = []
                         if (loadedActivities) {
                             for (var k = 0; k < loadedActivities.length; k++) {
                                 var activity = loadedActivities[k]
                                 // Check if this activity is in our target list
                                 if (targetActIds.indexOf(activity.id) !== -1) {
-                                    tempActivitiesList.push({
+                                    localActivities.push({
                                         projectId: pid,
                                         projectName: pname,
                                         activityId: activity.id,
@@ -409,10 +410,19 @@ PlasmoidItem {
                             }
                         }
                         
-                        // Increment counter and update list only when all are loaded
+                        // Store this project's activities
+                        activitiesByProject[pid] = localActivities
+                        
+                        // Increment counter and merge all results when all are loaded
                         loadedCount++
                         if (loadedCount === projectCount) {
-                            quickActionActivitiesList = tempActivitiesList
+                            var finalList = []
+                            for (var p in activitiesByProject) {
+                                if (activitiesByProject.hasOwnProperty(p)) {
+                                    finalList = finalList.concat(activitiesByProject[p])
+                                }
+                            }
+                            quickActionActivitiesList = finalList
                         }
                     })
                 })(projectIdNum, projectName, targetActivities[projId])

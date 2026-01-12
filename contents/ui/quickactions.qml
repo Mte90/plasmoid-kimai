@@ -65,7 +65,7 @@ KCM.SimpleKCM {
 
     function toggleProjectActivity(projectId, activityId) {
         // Validate inputs
-        if (!projectId || !activityId || isNaN(projectId) || isNaN(activityId)) {
+        if (isNaN(projectId) || isNaN(activityId)) {
             return
         }
         
@@ -84,7 +84,7 @@ KCM.SimpleKCM {
 
     function isActivitySelected(projectId, activityId) {
         // Validate inputs
-        if (!projectId || !activityId || isNaN(projectId) || isNaN(activityId)) {
+        if (isNaN(projectId) || isNaN(activityId)) {
             return false
         }
         
