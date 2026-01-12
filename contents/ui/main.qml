@@ -1,9 +1,10 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
-import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.plasmoid 2.0
-import org.kde.plasma.components 3.0 as PlasmaComponents3
-import org.kde.plasma.extras 2.0 as PlasmaExtras
+import QtQuick
+import QtQuick.Layouts
+import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.components as PlasmaComponents3
+import org.kde.plasma.extras as PlasmaExtras
+import org.kde.kirigami as Kirigami
 
 Item {
     id: root
@@ -25,12 +26,14 @@ Item {
     property var quickActionProjectsList: []
 
     // Plasmoid properties
-    Plasmoid.preferredRepresentation: Plasmoid.compactRepresentation
-    Plasmoid.icon: isTracking ? "chronometer" : "chronometer-pause"
-    Plasmoid.toolTipMainText: "Kimai Tracker"
-    Plasmoid.toolTipSubText: isTracking ? 
-        i18n("Tracking: %1 (%2)", currentProject, formatTime(elapsedSeconds)) : 
-        i18n("Click to start tracking")
+    Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
+    
+    property Item toolTipItem: PlasmaCore.ToolTipArea {
+        mainText: "Kimai Tracker"
+        subText: isTracking ? 
+            i18n("Tracking: %1 (%2)", currentProject, formatTime(elapsedSeconds)) : 
+            i18n("Click to start tracking")
+    }
 
     // Timer for updating elapsed time
     Timer {
@@ -55,13 +58,13 @@ Item {
     }
 
     // Compact representation (icon in panel)
-    Plasmoid.compactRepresentation: Item {
-        Layout.minimumWidth: PlasmaCore.Units.iconSizes.small
-        Layout.minimumHeight: PlasmaCore.Units.iconSizes.small
+    compactRepresentation: Item {
+        Layout.minimumWidth: Kirigami.Units.iconSizes.small
+        Layout.minimumHeight: Kirigami.Units.iconSizes.small
 
-        PlasmaCore.IconItem {
+        Kirigami.Icon {
             anchors.fill: parent
-            source: plasmoid.icon
+            source: isTracking ? "chronometer" : "chronometer-pause"
             active: compactMouse.containsMouse
         }
 
@@ -74,14 +77,14 @@ Item {
     }
 
     // Full representation (expanded popup)
-    Plasmoid.fullRepresentation: Item {
-        Layout.preferredWidth: PlasmaCore.Units.gridUnit * 20
-        Layout.preferredHeight: PlasmaCore.Units.gridUnit * 25
+    fullRepresentation: Item {
+        Layout.preferredWidth: Kirigami.Units.gridUnit * 20
+        Layout.preferredHeight: Kirigami.Units.gridUnit * 25
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: PlasmaCore.Units.smallSpacing
-            spacing: PlasmaCore.Units.smallSpacing
+            anchors.margins: Kirigami.Units.smallSpacing
+            spacing: Kirigami.Units.smallSpacing
 
             // Header
             PlasmaExtras.Heading {
@@ -94,9 +97,9 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
 
-                PlasmaCore.IconItem {
-                    Layout.preferredWidth: PlasmaCore.Units.iconSizes.small
-                    Layout.preferredHeight: PlasmaCore.Units.iconSizes.small
+                Kirigami.Icon {
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
                     source: kimaiUrl && apiToken ? "network-connect" : "network-disconnect"
                 }
 
@@ -106,7 +109,7 @@ Item {
                         i18n("Connected to %1", kimaiUrl) : 
                         i18n("Not configured - right-click to configure")
                     elide: Text.ElideRight
-                    font.pointSize: PlasmaCore.Theme.smallestFont.pointSize
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
                 }
             }
 
@@ -123,11 +126,11 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: PlasmaCore.Units.smallSpacing
+                spacing: Kirigami.Units.smallSpacing
 
-                PlasmaCore.IconItem {
-                    Layout.preferredWidth: PlasmaCore.Units.iconSizes.medium
-                    Layout.preferredHeight: PlasmaCore.Units.iconSizes.medium
+                Kirigami.Icon {
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.medium
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.medium
                     source: isTracking ? "chronometer" : "chronometer-pause"
                 }
 
@@ -143,19 +146,19 @@ Item {
                     PlasmaComponents3.Label {
                         visible: isTracking
                         text: i18n("Project: %1", currentProject || i18n("None"))
-                        font.pointSize: PlasmaCore.Theme.smallestFont.pointSize
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
                     }
 
                     PlasmaComponents3.Label {
                         visible: isTracking
                         text: i18n("Activity: %1", currentActivity || i18n("None"))
-                        font.pointSize: PlasmaCore.Theme.smallestFont.pointSize
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
                     }
 
                     PlasmaComponents3.Label {
                         visible: isTracking
                         text: i18n("Time: %1", formatTime(elapsedSeconds))
-                        font.pointSize: PlasmaCore.Theme.smallestFont.pointSize
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
                     }
                 }
             }
@@ -175,7 +178,7 @@ Item {
             // Quick action buttons for configured projects
             Flow {
                 Layout.fillWidth: true
-                spacing: PlasmaCore.Units.smallSpacing
+                spacing: Kirigami.Units.smallSpacing
                 visible: quickActionProjectsList.length > 0
 
                 Repeater {
@@ -233,7 +236,7 @@ Item {
             // Control buttons
             RowLayout {
                 Layout.fillWidth: true
-                spacing: PlasmaCore.Units.smallSpacing
+                spacing: Kirigami.Units.smallSpacing
 
                 PlasmaComponents3.Button {
                     Layout.fillWidth: true

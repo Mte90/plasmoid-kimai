@@ -1,9 +1,10 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import org.kde.kirigami 2.20 as Kirigami
+import QtQuick
+import QtQuick.Controls as QQC2
+import QtQuick.Layouts
+import org.kde.kcmutils as KCM
+import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+KCM.SimpleKCM {
     id: quickActionsConfig
 
     property alias cfg_quickActionProjects: quickActionProjectsField.text
@@ -59,77 +60,79 @@ Kirigami.FormLayout {
         return selected
     }
 
-    // Description
-    Label {
-        Layout.fillWidth: true
-        text: i18n("Select projects to show as quick action buttons in the panel")
-        wrapMode: Text.WordWrap
-        font.bold: true
-    }
+    Kirigami.FormLayout {
+        // Description
+        QQC2.Label {
+            Layout.fillWidth: true
+            text: i18n("Select projects to show as quick action buttons in the panel")
+            wrapMode: Text.WordWrap
+            font.bold: true
+        }
 
-    Label {
-        Layout.fillWidth: true
-        Layout.topMargin: Kirigami.Units.smallSpacing
-        text: i18n("Quick action buttons allow you to start tracking time for a project with a single click. The buttons will appear in the plasmoid's interface.")
-        wrapMode: Text.WordWrap
-        font.pointSize: Kirigami.Theme.smallFont.pointSize
-        opacity: 0.7
-    }
+        QQC2.Label {
+            Layout.fillWidth: true
+            Layout.topMargin: Kirigami.Units.smallSpacing
+            text: i18n("Quick action buttons allow you to start tracking time for a project with a single click. The buttons will appear in the plasmoid's interface.")
+            wrapMode: Text.WordWrap
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.7
+        }
 
-    // Status label
-    Label {
-        id: statusLabel
-        Layout.fillWidth: true
-        Layout.topMargin: Kirigami.Units.largeSpacing
-        text: i18n("Loading projects...")
-        wrapMode: Text.WordWrap
-        font.pointSize: Kirigami.Theme.smallFont.pointSize
-    }
+        // Status label
+        QQC2.Label {
+            id: statusLabel
+            Layout.fillWidth: true
+            Layout.topMargin: Kirigami.Units.largeSpacing
+            text: i18n("Loading projects...")
+            wrapMode: Text.WordWrap
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+        }
 
-    // Projects list
-    ScrollView {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        Layout.preferredHeight: 300
+        // Projects list
+        QQC2.ScrollView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredHeight: 300
 
-        ListView {
-            id: projectsListView
-            clip: true
-            
-            delegate: CheckDelegate {
-                width: ListView.view.width
-                text: modelData.name
-                checked: {
-                    var ids = quickActionProjectsField.text.split(',')
-                    return ids.indexOf(String(modelData.id)) !== -1
-                }
-                onToggled: {
-                    var ids = quickActionProjectsField.text ? quickActionProjectsField.text.split(',') : []
-                    var idStr = String(modelData.id)
-                    var index = ids.indexOf(idStr)
-                    
-                    if (checked && index === -1) {
-                        ids.push(idStr)
-                    } else if (!checked && index !== -1) {
-                        ids.splice(index, 1)
+            ListView {
+                id: projectsListView
+                clip: true
+                
+                delegate: QQC2.CheckDelegate {
+                    width: ListView.view.width
+                    text: modelData.name
+                    checked: {
+                        var ids = quickActionProjectsField.text.split(',')
+                        return ids.indexOf(String(modelData.id)) !== -1
                     }
-                    
-                    quickActionProjectsField.text = ids.filter(function(id) { return id !== '' }).join(',')
+                    onToggled: {
+                        var ids = quickActionProjectsField.text ? quickActionProjectsField.text.split(',') : []
+                        var idStr = String(modelData.id)
+                        var index = ids.indexOf(idStr)
+                        
+                        if (checked && index === -1) {
+                            ids.push(idStr)
+                        } else if (!checked && index !== -1) {
+                            ids.splice(index, 1)
+                        }
+                        
+                        quickActionProjectsField.text = ids.filter(function(id) { return id !== '' }).join(',')
+                    }
                 }
             }
         }
-    }
 
-    // Hidden field to store selected project IDs
-    TextField {
-        id: quickActionProjectsField
-        visible: false
-    }
+        // Hidden field to store selected project IDs
+        QQC2.TextField {
+            id: quickActionProjectsField
+            visible: false
+        }
 
-    // Reload button
-    Button {
-        text: i18n("Reload Projects")
-        icon.name: "view-refresh"
-        onClicked: loadProjects()
+        // Reload button
+        QQC2.Button {
+            text: i18n("Reload Projects")
+            icon.name: "view-refresh"
+            onClicked: loadProjects()
+        }
     }
 }

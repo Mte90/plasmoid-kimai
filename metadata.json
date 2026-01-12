@@ -12,14 +12,9 @@
         "Id": "com.mte90.kimaitracker",
         "License": "GPL-3.0",
         "Name": "Kimai Tracker",
-        "ServiceTypes": [
-            "Plasma/Applet"
-        ],
         "Version": "1.0",
         "Website": "https://github.com/Mte90/plasmoid-kimai"
     },
-    "X-KDE-PluginInfo-Dependencies": "",
     "X-Plasma-API": "declarativeappletscript",
-    "X-Plasma-ConfigDialog-Layout": "config.qml",
-    "X-Plasma-MainScript": "main.qml"
+    "X-Plasma-MainScript": "ui/main.qml"
 }
