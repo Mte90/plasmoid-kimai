@@ -31,7 +31,7 @@ Item {
     Timer {
         id: trackingTimer
         interval: 1000
-        running: isTracking
+        running: isTracking && currentTimeSheetId !== -1
         repeat: true
         onTriggered: {
             elapsedSeconds++
@@ -239,6 +239,21 @@ Item {
         return names
     }
 
+    function resetTrackingState() {
+        isTracking = false
+        currentTimeSheetId = -1
+        currentProject = ""
+        currentActivity = ""
+        elapsedSeconds = 0
+    }
+
+    function refreshApiData() {
+        if (kimaiUrl && apiToken) {
+            loadProjects()
+            fetchActiveTimesheet()
+        }
+    }
+
     function loadProjects() {
         if (!kimaiUrl || !apiToken) {
             return
@@ -316,23 +331,23 @@ Item {
                         var activeTimesheets = JSON.parse(xhr.responseText)
                         if (activeTimesheets.length > 0) {
                             var timesheet = activeTimesheets[0]
-                            isTracking = true
-                            currentTimeSheetId = timesheet.id
-                            currentProject = timesheet.project ? timesheet.project.name : ""
-                            currentActivity = timesheet.activity ? timesheet.activity.name : ""
                             
-                            // Calculate elapsed seconds using UTC timestamps
-                            var beginDate = new Date(timesheet.begin)
-                            var now = new Date()
-                            elapsedSeconds = Math.floor((now.getTime() - beginDate.getTime()) / 1000)
+                            // Only update if this is a new timesheet or we're not already tracking
+                            if (currentTimeSheetId !== timesheet.id) {
+                                isTracking = true
+                                currentTimeSheetId = timesheet.id
+                                currentProject = timesheet.project ? timesheet.project.name : ""
+                                currentActivity = timesheet.activity ? timesheet.activity.name : ""
+                                
+                                // Calculate elapsed seconds using UTC timestamps
+                                var beginDate = new Date(timesheet.begin)
+                                var now = new Date()
+                                elapsedSeconds = Math.floor((now.getTime() - beginDate.getTime()) / 1000)
+                            }
                         } else {
                             if (isTracking && currentTimeSheetId !== -1) {
                                 // Tracking stopped remotely
-                                isTracking = false
-                                currentTimeSheetId = -1
-                                currentProject = ""
-                                currentActivity = ""
-                                elapsedSeconds = 0
+                                resetTrackingState()
                             }
                         }
                     } catch (e) {
@@ -411,11 +426,7 @@ Item {
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
-                    isTracking = false
-                    currentTimeSheetId = -1
-                    currentProject = ""
-                    currentActivity = ""
-                    elapsedSeconds = 0
+                    resetTrackingState()
                 } else {
                     console.error("Failed to stop tracking:", xhr.status, xhr.statusText)
                 }
@@ -427,24 +438,15 @@ Item {
 
     Component.onCompleted: {
         // Initialize the plasmoid
-        if (kimaiUrl && apiToken) {
-            loadProjects()
-            fetchActiveTimesheet()
-        }
+        refreshApiData()
     }
 
     // Reload projects when configuration changes
     onKimaiUrlChanged: {
-        if (kimaiUrl && apiToken) {
-            loadProjects()
-            fetchActiveTimesheet()
-        }
+        refreshApiData()
     }
 
     onApiTokenChanged: {
-        if (kimaiUrl && apiToken) {
-            loadProjects()
-            fetchActiveTimesheet()
-        }
+        refreshApiData()
     }
 }
