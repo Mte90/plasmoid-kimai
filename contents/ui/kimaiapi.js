@@ -2,6 +2,25 @@
 .pragma library
 
 /**
+ * Create and configure XMLHttpRequest with authentication
+ * @param {string} method - HTTP method (GET, POST, PATCH, etc.)
+ * @param {string} kimaiUrl - The Kimai server URL
+ * @param {string} endpoint - API endpoint path
+ * @param {string} apiToken - The API token
+ * @param {boolean} isJson - Whether to set Content-Type to application/json
+ * @returns {XMLHttpRequest} Configured XMLHttpRequest object
+ */
+function createAuthenticatedRequest(method, kimaiUrl, endpoint, apiToken, isJson) {
+    var xhr = new XMLHttpRequest()
+    xhr.open(method, kimaiUrl + endpoint, true)
+    xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
+    if (isJson) {
+        xhr.setRequestHeader("Content-Type", "application/json")
+    }
+    return xhr
+}
+
+/**
  * Test connection to Kimai server
  * @param {string} kimaiUrl - The Kimai server URL
  * @param {string} apiToken - The API token
@@ -13,9 +32,7 @@ function testConnection(kimaiUrl, apiToken, callback) {
         return
     }
 
-    var xhr = new XMLHttpRequest()
-    xhr.open("GET", kimaiUrl + "/api/version", true)
-    xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
+    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/version", apiToken, false)
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -55,9 +72,7 @@ function loadProjects(kimaiUrl, apiToken, callback) {
         return
     }
 
-    var xhr = new XMLHttpRequest()
-    xhr.open("GET", kimaiUrl + "/api/projects?visible=3&order=name&orderBy=ASC", true)
-    xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
+    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/projects?visible=3&order=name&orderBy=ASC", apiToken, false)
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -92,9 +107,7 @@ function loadActivities(kimaiUrl, apiToken, projectId, callback) {
         return
     }
 
-    var xhr = new XMLHttpRequest()
-    xhr.open("GET", kimaiUrl + "/api/activities?project=" + projectId + "&visible=3&order=name&orderBy=ASC", true)
-    xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
+    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/activities?project=" + projectId + "&visible=3&order=name&orderBy=ASC", apiToken, false)
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -128,9 +141,7 @@ function fetchActiveTimesheet(kimaiUrl, apiToken, callback) {
         return
     }
 
-    var xhr = new XMLHttpRequest()
-    xhr.open("GET", kimaiUrl + "/api/timesheets/active", true)
-    xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
+    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/timesheets/active", apiToken, false)
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -165,10 +176,7 @@ function startTracking(kimaiUrl, apiToken, projectId, activityId, callback) {
         return
     }
 
-    var xhr = new XMLHttpRequest()
-    xhr.open("POST", kimaiUrl + "/api/timesheets", true)
-    xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
-    xhr.setRequestHeader("Content-Type", "application/json")
+    var xhr = createAuthenticatedRequest("POST", kimaiUrl, "/api/timesheets", apiToken, true)
     
     var data = {
         begin: new Date().toISOString(),
@@ -209,10 +217,7 @@ function stopTracking(kimaiUrl, apiToken, timesheetId, callback) {
         return
     }
 
-    var xhr = new XMLHttpRequest()
-    xhr.open("PATCH", kimaiUrl + "/api/timesheets/" + timesheetId + "/stop", true)
-    xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
-    xhr.setRequestHeader("Content-Type", "application/json")
+    var xhr = createAuthenticatedRequest("PATCH", kimaiUrl, "/api/timesheets/" + timesheetId + "/stop", apiToken, true)
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {

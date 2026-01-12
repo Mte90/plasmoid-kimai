@@ -83,7 +83,14 @@ PlasmoidItem {
             id: compactMouse
             anchors.fill: parent
             hoverEnabled: true
-            onClicked: plasmoid.expanded = !plasmoid.expanded
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: function(mouse) {
+                if (mouse.button === Qt.LeftButton) {
+                    handleCompactClick()
+                } else if (mouse.button === Qt.RightButton) {
+                    plasmoid.expanded = !plasmoid.expanded
+                }
+            }
         }
     }
 
@@ -271,6 +278,20 @@ PlasmoidItem {
     }
 
     // Helper functions
+    function handleCompactClick() {
+        if (isTracking) {
+            // Stop current tracking
+            stopTracking()
+        } else {
+            // Start tracking first quick action project, or expand if none configured
+            if (quickActionProjectsList.length > 0 && kimaiUrl && apiToken) {
+                startTrackingProject(quickActionProjectsList[0].id, quickActionProjectsList[0].name)
+            } else {
+                plasmoid.expanded = !plasmoid.expanded
+            }
+        }
+    }
+
     function formatTime(seconds) {
         var hours = Math.floor(seconds / 3600)
         var minutes = Math.floor((seconds % 3600) / 60)
