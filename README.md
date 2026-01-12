@@ -10,12 +10,12 @@ Kimai Tracker is a KDE Plasma widget that integrates with [Kimai](https://www.ki
 
 ### Prerequisites
 
-- KDE Plasma 5 or later
+- KDE Plasma 6 or later
 - Git
 
 **For development only:**
-- Qt 5 Development Libraries
-- KDE Frameworks 5
+- Qt 6 Development Libraries
+- KDE Frameworks 6
 - Development Tools (cmake, build-essential)
 
 ### Installation Steps
@@ -29,23 +29,23 @@ Kimai Tracker is a KDE Plasma widget that integrates with [Kimai](https://www.ki
 2. **For development, install dependencies:**
    ```bash
    # On Debian/Ubuntu
-   sudo apt install qtbase5-dev qtdeclarative5-dev libkf5plasma-dev plasma-framework-dev extra-cmake-modules cmake build-essential
+   sudo apt install qtbase6-dev qtdeclarative5-dev libkf5plasma-dev plasma-framework-dev extra-cmake-modules cmake build-essential
    
    # On Fedora
-   sudo dnf install qt5-qtbase-devel qt5-qtdeclarative-devel kf5-plasma-devel extra-cmake-modules cmake gcc-c++ make
+   sudo dnf install qt6-qtbase-devel qt5-qtdeclarative-devel kf5-plasma-devel extra-cmake-modules cmake gcc-c++ make
    
    # On Arch Linux
-   sudo pacman -S qt5-base qt5-declarative plasma-framework extra-cmake-modules cmake base-devel
+   sudo pacman -S qt6-base qt6-declarative plasma-framework extra-cmake-modules cmake base-devel
    ```
 
 3. **Install the plasmoid:**
    ```bash
-   kpackagetool5 -i . -t Plasma/Applet
+   kpackagetool6 -i . -t Plasma/Applet
    ```
    
    To update an existing installation:
    ```bash
-   kpackagetool5 -u . -t Plasma/Applet
+   kpackagetool6 -u . -t Plasma/Applet
    ```
 
 4. **Enable the widget:**
@@ -58,7 +58,7 @@ Kimai Tracker is a KDE Plasma widget that integrates with [Kimai](https://www.ki
 
 After making changes, update the plasmoid:
 ```bash
-kpackagetool5 -u . -t Plasma/Applet
+kpackagetool6 -u . -t Plasma/Applet
 plasmashell --replace &
 ```
 
