@@ -247,7 +247,6 @@ Item {
         var xhr = new XMLHttpRequest()
         xhr.open("GET", kimaiUrl + "/api/projects?visible=3&order=name&orderBy=ASC", true)
         xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
-        xhr.setRequestHeader("Content-Type", "application/json")
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -272,12 +271,16 @@ Item {
             return
         }
 
-        var projectId = projects[projectComboBox.currentIndex - 1].id
+        var projectIndex = projectComboBox.currentIndex - 1
+        if (projectIndex < 0 || projectIndex >= projects.length) {
+            return
+        }
+
+        var projectId = projects[projectIndex].id
         
         var xhr = new XMLHttpRequest()
         xhr.open("GET", kimaiUrl + "/api/activities?project=" + projectId + "&visible=3&order=name&orderBy=ASC", true)
         xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
-        xhr.setRequestHeader("Content-Type", "application/json")
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -305,7 +308,6 @@ Item {
         var xhr = new XMLHttpRequest()
         xhr.open("GET", kimaiUrl + "/api/timesheets/active", true)
         xhr.setRequestHeader("X-AUTH-TOKEN", apiToken)
-        xhr.setRequestHeader("Content-Type", "application/json")
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -319,10 +321,10 @@ Item {
                             currentProject = timesheet.project ? timesheet.project.name : ""
                             currentActivity = timesheet.activity ? timesheet.activity.name : ""
                             
-                            // Calculate elapsed seconds
+                            // Calculate elapsed seconds using UTC timestamps
                             var beginDate = new Date(timesheet.begin)
                             var now = new Date()
-                            elapsedSeconds = Math.floor((now - beginDate) / 1000)
+                            elapsedSeconds = Math.floor((now.getTime() - beginDate.getTime()) / 1000)
                         } else {
                             if (isTracking && currentTimeSheetId !== -1) {
                                 // Tracking stopped remotely
@@ -352,8 +354,16 @@ Item {
             return
         }
 
-        var projectId = projects[projectComboBox.currentIndex - 1].id
-        var activityId = activities[activityComboBox.currentIndex - 1].id
+        var projectIndex = projectComboBox.currentIndex - 1
+        var activityIndex = activityComboBox.currentIndex - 1
+        
+        if (projectIndex < 0 || projectIndex >= projects.length || 
+            activityIndex < 0 || activityIndex >= activities.length) {
+            return
+        }
+
+        var projectId = projects[projectIndex].id
+        var activityId = activities[activityIndex].id
         
         var xhr = new XMLHttpRequest()
         xhr.open("POST", kimaiUrl + "/api/timesheets", true)
