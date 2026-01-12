@@ -59,7 +59,13 @@ PlasmoidItem {
 
         Kirigami.Icon {
             anchors.fill: parent
-            source: isTracking ? "chronometer" : "chronometer-pause"
+            source: {
+                if (isTracking) {
+                    return "chronometer"
+                } else {
+                    return Qt.resolvedUrl("../images/icon.png")
+                }
+            }
             active: compactMouse.containsMouse
         }
 
