@@ -1,4 +1,5 @@
 {
+    "KPackageStructure": "Plasma/Applet",
     "KPlugin": {
         "Authors": [
             {
@@ -16,5 +17,5 @@
         "Website": "https://github.com/Mte90/plasmoid-kimai"
     },
     "X-Plasma-API": "declarativeappletscript",
-    "X-Plasma-MainScript": "contents/ui/main.qml"
+    "X-Plasma-MainScript": "ui/main.qml"
 }
