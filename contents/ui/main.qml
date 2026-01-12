@@ -6,7 +6,7 @@ import org.kde.plasma.components as PlasmaComponents3
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.kirigami as Kirigami
 
-Item {
+PlasmoidItem {
     id: root
 
     // Constants
@@ -25,15 +25,11 @@ Item {
     property var activities: []
     property var quickActionProjectsList: []
 
-    // Plasmoid properties
-    Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
-    
-    property Item toolTipItem: PlasmaCore.ToolTipArea {
-        mainText: "Kimai Tracker"
-        subText: isTracking ? 
-            i18n("Tracking: %1 (%2)", currentProject, formatTime(elapsedSeconds)) : 
-            i18n("Click to start tracking")
-    }
+    // Tooltip
+    toolTipMainText: "Kimai Tracker"
+    toolTipSubText: isTracking ? 
+        i18n("Tracking: %1 (%2)", currentProject, formatTime(elapsedSeconds)) : 
+        i18n("Click to start tracking")
 
     // Timer for updating elapsed time
     Timer {

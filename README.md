@@ -69,13 +69,13 @@ export QML_DISABLE_OPTIMIZER=1
 
 Test in isolation with:
 ```bash
-plasmoidviewer -a com.example.kimaitracker
+plasmoidviewer -a com.mte90.kimaitracker
 ```
 
 ### Uninstallation
 
 ```bash
-kpackagetool5 -r com.example.kimaitracker -t Plasma/Applet
+kpackagetool6 -r com.mte90.kimaitracker -t Plasma/Applet
 ```
 
 ## Usage
