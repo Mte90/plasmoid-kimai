@@ -59,13 +59,6 @@ Kirigami.FormLayout {
         return selected
     }
 
-    function setSelectedProjects(projectIds) {
-        var ids = projectIds.split(',')
-        for (var i = 0; i < availableProjects.length; i++) {
-            availableProjects[i].selected = ids.indexOf(String(availableProjects[i].id)) !== -1
-        }
-    }
-
     // Description
     Label {
         Layout.fillWidth: true

@@ -8,6 +8,9 @@ import org.kde.plasma.extras 2.0 as PlasmaExtras
 Item {
     id: root
 
+    // Constants
+    readonly property int INVALID_TIMESHEET_ID: -1
+
     // Configuration properties
     property string kimaiUrl: plasmoid.configuration.kimaiUrl
     property string apiToken: plasmoid.configuration.apiToken
@@ -16,7 +19,7 @@ Item {
     property string currentProject: ""
     property string currentActivity: ""
     property int elapsedSeconds: 0
-    property int currentTimeSheetId: -1
+    property int currentTimeSheetId: INVALID_TIMESHEET_ID
     property var projects: []
     property var activities: []
     property var quickActionProjectsList: []
@@ -33,7 +36,7 @@ Item {
     Timer {
         id: trackingTimer
         interval: 1000
-        running: isTracking && currentTimeSheetId !== -1
+        running: isTracking
         repeat: true
         onTriggered: {
             elapsedSeconds++
@@ -281,7 +284,7 @@ Item {
 
     function resetTrackingState() {
         isTracking = false
-        currentTimeSheetId = -1
+        currentTimeSheetId = INVALID_TIMESHEET_ID
         currentProject = ""
         currentActivity = ""
         elapsedSeconds = 0
@@ -490,7 +493,7 @@ Item {
                                 elapsedSeconds = Math.floor((now.getTime() - beginDate.getTime()) / 1000)
                             }
                         } else {
-                            if (isTracking && currentTimeSheetId !== -1) {
+                            if (isTracking && currentTimeSheetId !== INVALID_TIMESHEET_ID) {
                                 // Tracking stopped remotely
                                 resetTrackingState()
                             }
@@ -559,7 +562,7 @@ Item {
     }
 
     function stopTracking() {
-        if (!kimaiUrl || !apiToken || currentTimeSheetId === -1) {
+        if (!kimaiUrl || !apiToken || currentTimeSheetId === INVALID_TIMESHEET_ID) {
             return
         }
 
