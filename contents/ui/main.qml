@@ -430,30 +430,6 @@ PlasmoidItem {
         }
     }
 
-    function startTrackingProject(projectId, projectName) {
-        if (!kimaiUrl || !apiToken || isTracking) {
-            return
-        }
-
-        // Get default activity for the project
-        KimaiApi.loadActivities(kimaiUrl, apiToken, projectId, function(loadedActivities) {
-            if (loadedActivities && loadedActivities.length > 0) {
-                var activityId = loadedActivities[0].id
-                var activityName = loadedActivities[0].name
-                
-                KimaiApi.startTracking(kimaiUrl, apiToken, projectId, activityId, function(success, response) {
-                    if (success && response) {
-                        isTracking = true
-                        currentTimeSheetId = response.id
-                        currentProject = projectName
-                        currentActivity = activityName
-                        elapsedSeconds = 0
-                    }
-                })
-            }
-        })
-    }
-
     function startTrackingProjectActivity(projectId, projectName, activityId, activityName) {
         if (!kimaiUrl || !apiToken || isTracking) {
             return
