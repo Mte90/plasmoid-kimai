@@ -285,7 +285,12 @@ PlasmoidItem {
         } else {
             // Start tracking first quick action project, or expand if none configured
             if (quickActionProjectsList.length > 0 && kimaiUrl && apiToken) {
-                startTrackingProject(quickActionProjectsList[0].id, quickActionProjectsList[0].name)
+                var firstProject = quickActionProjectsList[0]
+                if (firstProject && firstProject.id && firstProject.name) {
+                    startTrackingProject(firstProject.id, firstProject.name)
+                } else {
+                    plasmoid.expanded = !plasmoid.expanded
+                }
             } else {
                 plasmoid.expanded = !plasmoid.expanded
             }

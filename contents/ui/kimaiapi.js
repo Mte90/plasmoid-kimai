@@ -11,6 +11,11 @@
  * @returns {XMLHttpRequest} Configured XMLHttpRequest object
  */
 function createAuthenticatedRequest(method, kimaiUrl, endpoint, apiToken, isJson) {
+    if (!method || !kimaiUrl || !endpoint || !apiToken) {
+        console.error("createAuthenticatedRequest: Missing required parameters")
+        return null
+    }
+    
     var xhr = new XMLHttpRequest()
     xhr.open(method, kimaiUrl + endpoint, true)
     xhr.setRequestHeader("Authorization", "Bearer " + apiToken)
