@@ -12,5 +12,8 @@
     <entry name="apiToken" type="String">
       <default></default>
     </entry>
+    <entry name="quickActionProjects" type="String">
+      <default></default>
+    </entry>
   </group>
 </kcfg>
