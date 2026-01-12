@@ -87,14 +87,42 @@ kpackagetool6 -r com.mte90.kimaitracker -t Plasma/Applet
 2. **Configure API Settings:**
    - Right-click on the Kimai Tracker widget
    - Select "Configure..."
+   - Go to the "General" tab
    - Enter your Kimai server URL (e.g., `https://your-kimai-instance.com`)
    - Enter your API token (you can generate this in your Kimai user settings)
+   - Click "Test Connection" to verify your settings
    - Save the configuration
+
+3. **Configure Quick Actions (Optional but Recommended):**
+   - Right-click on the Kimai Tracker widget
+   - Select "Configure..."
+   - Go to the "Quick Actions" tab
+   - Click on a project from the left list
+   - Check the activities you want as quick actions from the right list
+   - You can select multiple project-activity combinations
+   - Save the configuration
+   - Now you can quickly start tracking by clicking the panel icon
 
 ### Tracking Time
 
-1. **Start Tracking:**
-   - Click on the Kimai Tracker widget
+#### Quick Actions (Panel Icon)
+
+Once you have configured quick actions (see Configuration section):
+
+1. **Start Tracking with Quick Actions:**
+   - **Left-click** the panel icon to start tracking the next quick action
+   - Each click cycles through your configured quick actions
+   - The tooltip shows which activity will be started next
+   - **Middle-click** the panel icon to preview the next action without starting it
+
+2. **Stop Tracking:**
+   - **Left-click** the panel icon while tracking to stop the current timer
+   - **Right-click** opens the full widget for more options
+
+#### Manual Selection (Full Widget)
+
+1. **Start Tracking Manually:**
+   - Click on the Kimai Tracker widget to expand it
    - Select a project and activity from the available options
    - Click "Start" to begin tracking time
 
@@ -108,8 +136,10 @@ kpackagetool6 -r com.mte90.kimaitracker -t Plasma/Applet
 
 ### Tips
 
+- Configure quick actions for your most common project-activity combinations
 - Keep the widget visible in your panel for quick access
-- Use keyboard shortcuts (if configured) for faster time tracking
+- Use left-click to cycle through and start different quick actions
+- Use middle-click to preview which action will start next
 - Regularly sync your entries to ensure data is saved to the Kimai server
 
 ## Contributing
