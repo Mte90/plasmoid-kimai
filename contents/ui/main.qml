@@ -390,6 +390,8 @@ PlasmoidItem {
         
         if (!quickActionProjects || !projects.length) {
             console.log("Kimai: No quick actions or projects to process");
+            console.log("Kimai: quickActionProjects:", quickActionProjects, "type:", typeof quickActionProjects);
+            console.log("Kimai: projects.length:", projects.length);
             quickActionActivitiesList = [];
             isUpdatingQuickActions = false
             return;
