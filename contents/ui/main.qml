@@ -381,7 +381,6 @@ PlasmoidItem {
                 var activity = loadedActivities[k]
                 // Check if this activity is in our target list
                 if (targetActIds.indexOf(activity.id) !== -1) {
-                    console.log("Kimai: Matched activity", activity.id, activity.name, "for project", pid)
                     localActivities.push({
                         projectId: pid,
                         projectName: pname,
@@ -394,11 +393,9 @@ PlasmoidItem {
         
         // Store this project's activities
         activitiesByProject[pid] = localActivities
-        console.log("Kimai: Project", pid, "has", localActivities.length, "matching activities")
         
         // Increment counter and check if all are loaded
         loadedCountRef++
-        console.log("Kimai: Loaded", loadedCountRef, "of", projectCount, "projects")
         
         if (loadedCountRef === projectCount) {
             // All projects loaded, merge the results
@@ -413,9 +410,7 @@ PlasmoidItem {
             quickActionActivitiesList = []
             quickActionActivitiesList = allActivities
             
-            console.log("Kimai: Updated quick actions list, count:", allActivities.length)
             for (var m = 0; m < allActivities.length; m++) {
-                console.log("Kimai: Quick action", m, ":", allActivities[m].projectName, "-", allActivities[m].activityName)
             }
             isUpdatingQuickActions = false
         }
@@ -432,16 +427,12 @@ PlasmoidItem {
 
     function updateQuickActionProjects() {
         if (isUpdatingQuickActions) {
-            console.log("Kimai: updateQuickActionProjects already running, skipping")
             return
         }
         
         isUpdatingQuickActions = true
         
         if (!quickActionProjects || !projects.length) {
-            console.log("Kimai: No quick actions or projects to process");
-            console.log("Kimai: quickActionProjects:", quickActionProjects, "type:", typeof quickActionProjects);
-            console.log("Kimai: projects.length:", projects.length);
             quickActionActivitiesList = [];
             isUpdatingQuickActions = false
             return;
@@ -450,11 +441,9 @@ PlasmoidItem {
         quickActionProjectsList = []
         quickActionActivitiesList = []
         
-        console.log("Kimai: updateQuickActionProjects called, quickActionProjects:", quickActionProjects, "projects.length:", projects.length)
 
         // Parse project:activity pairs separated by semicolons
         var pairs = quickActionProjects.split(';')
-        console.log("Kimai: Processing", pairs.length, "project:activity pairs")
         var uniqueProjectIds = {}
         var targetActivities = {}
         
@@ -490,7 +479,6 @@ PlasmoidItem {
         }
         
         if (projectCount === 0) {
-            console.log("Kimai: No projects to load activities for")
             isUpdatingQuickActions = false
             return
         }
@@ -506,30 +494,24 @@ PlasmoidItem {
                 
                 // Check if we have cached activities for this project
                 if (activitiesCache[projectIdNum]) {
-                    console.log("Kimai: Using cached activities for project", projectIdNum)
                     loadedCount = processActivitiesForProject(projectIdNum, projectName, targetActivities[projectIdNum], activitiesCache[projectIdNum], activitiesByProject, loadedCount, projectCount)
                 } else {
-                    console.log("Kimai: Loading activities from API for project", projectIdNum, "(" + projectName + ")")
                     
                     // Load activities for this project
                     (function(pid, pname, targetActIds) {
                     loadActivitiesForProjectId(pid, function(loadedActivities) {
                         if (!loadedActivities || !Array.isArray(loadedActivities)) {
-                            console.log("Kimai: Failed to load activities for project", pid)
                             loadedActivities = []
                         } else {
                             // Cache the loaded activities
                             activitiesCache[pid] = loadedActivities
-                            console.log("Kimai: Cached", loadedActivities.length, "activities for project", pid)
                         }
-                        console.log("Kimai: Loaded activities for project", pid, "count:", loadedActivities ? loadedActivities.length : 0)
                         var localActivities = []
                         if (loadedActivities) {
                             for (var k = 0; k < loadedActivities.length; k++) {
                                 var activity = loadedActivities[k]
                                 // Check if this activity is in our target list
                                 if (targetActIds.indexOf(activity.id) !== -1) {
-                                    console.log("Kimai: Matched activity", activity.id, activity.name, "for project", pid)
                                     localActivities.push({
                                         projectId: pid,
                                         projectName: pname,
@@ -542,11 +524,9 @@ PlasmoidItem {
                         
                         // Store this project's activities
                         activitiesByProject[pid] = localActivities
-                        console.log("Kimai: Project", pid, "has", localActivities.length, "matching activities")
                         
                         // Increment counter and merge all results when all are loaded
                         loadedCount++
-                        console.log("Kimai: Loaded", loadedCount, "of", projectCount, "projects")
                         if (loadedCount === projectCount) {
                             var finalList = []
                             for (var p in activitiesByProject) {
@@ -557,11 +537,9 @@ PlasmoidItem {
                             // Force property change notification by creating new array reference
                             quickActionActivitiesList = []
                             quickActionActivitiesList = finalList
-                            console.log("Kimai: Updated quick actions list, count:", quickActionActivitiesList.length)
                             // Log details without JSON.stringify to avoid potential issues
                             for (var i = 0; i < quickActionActivitiesList.length; i++) {
                                 var qa = quickActionActivitiesList[i]
-                                console.log("Kimai: Quick action", i, ":", qa.projectName, "-", qa.activityName)
                             }
                             isUpdatingQuickActions = false
                         }
@@ -590,7 +568,6 @@ PlasmoidItem {
 
     function loadActivitiesForProjectId(projectId, callback) {
         if (!kimaiUrl || !apiToken) {
-            console.log("Kimai: Cannot load activities - missing credentials")
             callback(null)
             return
         }
@@ -600,12 +577,10 @@ PlasmoidItem {
 
     function loadProjects() {
         if (!kimaiUrl || !apiToken) {
-            console.log("Kimai: Cannot load projects - missing kimaiUrl or apiToken")
             return
         }
         
         if (isLoadingProjects) {
-            console.log("Kimai: Already loading projects, skipping duplicate request")
             return
         }
         
@@ -615,15 +590,12 @@ PlasmoidItem {
         activities = []
         quickActionProjectsList = []
         quickActionActivitiesList = []
-        console.log("Kimai: Loading projects from API...")
         KimaiApi.loadProjects(kimaiUrl, apiToken, function(loadedProjects) {
             isLoadingProjects = false
             if (loadedProjects) {
                 projects = loadedProjects
-                console.log("Kimai: Loaded", loadedProjects.length, "projects")
                 updateQuickActionProjects()
             } else {
-                console.log("Kimai: Failed to load projects from API")
             }
         })
     }
@@ -728,7 +700,6 @@ PlasmoidItem {
 
     // Watch for quick actions list changes
     onQuickActionActivitiesListChanged: {
-        console.log("Kimai: quickActionActivitiesList changed! New count:", quickActionActivitiesList.length)
     }
 
     // Reload projects when configuration changes
@@ -743,17 +714,13 @@ PlasmoidItem {
     onQuickActionProjectsChanged: {
         // When quick actions configuration changes, update quick actions directly if we have projects
         // Otherwise reload projects first
-        console.log("Kimai: Quick action projects configuration changed:", quickActionProjects)
         if (kimaiUrl && apiToken) {
             if (projects.length > 0) {
-                console.log("Kimai: Projects already loaded, updating quick actions directly")
                 updateQuickActionProjects()
             } else {
-                console.log("Kimai: No projects loaded yet, loading projects first")
                 loadProjects()
             }
         } else {
-            console.log("Kimai: Cannot reload - missing kimaiUrl or apiToken")
         }
     }
 }

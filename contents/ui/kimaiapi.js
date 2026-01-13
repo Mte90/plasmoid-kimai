@@ -68,25 +68,18 @@ function testConnection(kimaiUrl, apiToken, callback) {
  */
 function loadProjects(kimaiUrl, apiToken, callback) {
     if (!kimaiUrl || !apiToken) {
-        console.log("Kimai API: loadProjects called without credentials")
         callback([]);
         return;
     }
 
-    console.log("Kimai API: Starting XHR request for projects")
     var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/projects?visible=3&order=ASC&orderBy=name", apiToken, false);
 
     xhr.onreadystatechange = function() {
-        console.log("Kimai API: XHR state changed for projects, readyState:", xhr.readyState, "status:", xhr.status)
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
                 try {
-                    console.log("Kimai API: Parsing projects response, length:", xhr.responseText.length)
                     var projects = JSON.parse(xhr.responseText);
-                    console.log("Kimai API: Successfully parsed", projects.length, "projects")
-                    console.log("Kimai API: Calling callback with", projects.length, "projects")
                     callback(projects);
-                    console.log("Kimai API: Callback completed for projects")
                 } catch (e) {
                     console.error("Failed to parse projects:", e, "Error name:", e.name, "Error message:", e.message);
                     console.error("Error stack:", e.stack);
@@ -105,9 +98,7 @@ function loadProjects(kimaiUrl, apiToken, callback) {
         callback([]);
     };
 
-    console.log("Kimai API: Sending XHR request for projects")
     xhr.send();
-    console.log("Kimai API: XHR request sent for projects")
 }
 
 /**
@@ -119,25 +110,18 @@ function loadProjects(kimaiUrl, apiToken, callback) {
  */
 function loadActivities(kimaiUrl, apiToken, projectId, callback) {
     if (!kimaiUrl || !apiToken) {
-        console.log("Kimai API: loadActivities called without credentials for project", projectId)
         callback(null)
         return
     }
 
-    console.log("Kimai API: Starting XHR request for activities of project", projectId)
     var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/activities?project=" + projectId + "&visible=3&order=ASC&orderBy=name", apiToken, false)
     
     xhr.onreadystatechange = function() {
-        console.log("Kimai API: XHR state changed for project", projectId, "readyState:", xhr.readyState, "status:", xhr.status)
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
                 try {
-                    console.log("Kimai API: Parsing activities response for project", projectId, "length:", xhr.responseText.length)
                     var activities = JSON.parse(xhr.responseText)
-                    console.log("Kimai API: Successfully parsed", activities.length, "activities for project", projectId)
-                    console.log("Kimai API: Calling callback for project", projectId, "with", activities.length, "activities")
                     callback(activities)
-                    console.log("Kimai API: Callback completed for project", projectId)
                 } catch (e) {
                     console.error("Failed to parse activities for project", projectId, ":", e, "Error name:", e.name, "Error message:", e.message)
                     console.error("Error stack:", e.stack)
@@ -156,9 +140,7 @@ function loadActivities(kimaiUrl, apiToken, projectId, callback) {
         callback(null)
     }
     
-    console.log("Kimai API: Sending XHR request for project", projectId)
     xhr.send()
-    console.log("Kimai API: XHR request sent for project", projectId)
 }
 
 /**
