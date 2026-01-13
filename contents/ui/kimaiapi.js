@@ -68,30 +68,30 @@ function testConnection(kimaiUrl, apiToken, callback) {
  */
 function loadProjects(kimaiUrl, apiToken, callback) {
     if (!kimaiUrl || !apiToken) {
-        callback(null)
-        return
+        callback([]);
+        return;
     }
 
-    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/projects?visible=3&order=ASC&orderBy=name", apiToken, false)
-    
+    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/projects?visible=3&order=ASC&orderBy=name", apiToken, false);
+
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
                 try {
-                    var projects = JSON.parse(xhr.responseText)
-                    callback(projects)
+                    var projects = JSON.parse(xhr.responseText);
+                    callback(projects);
                 } catch (e) {
-                    console.error("Failed to parse projects:", e)
-                    callback(null)
+                    console.error("Failed to parse projects:", e, xhr.responseText);
+                    callback([]);
                 }
             } else {
-                console.error("Failed to load projects:", xhr.status, xhr.statusText)
-                callback(null)
+                console.error("Failed to load projects:", xhr.status, xhr.statusText);
+                callback([]);
             }
         }
-    }
-    
-    xhr.send()
+    };
+
+    xhr.send();
 }
 
 /**

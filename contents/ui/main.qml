@@ -16,6 +16,7 @@ PlasmoidItem {
     property string kimaiUrl: plasmoid.configuration.kimaiUrl
     property string apiToken: plasmoid.configuration.apiToken
     property string quickActionProjects: plasmoid.configuration.quickActionProjects
+    property bool isLoadingProjects: false
     property bool isTracking: false
     property string currentProject: ""
     property string currentActivity: ""
@@ -141,7 +142,7 @@ PlasmoidItem {
                 onClicked: {
                     // If not configured, open settings; otherwise expand popup
                     if (!kimaiUrl || !apiToken || quickActionActivitiesList.length === 0) {
-                        plasmoid.action("configure").trigger()
+                        plasmoid.activateConfiguration()
                     } else {
                         plasmoid.expanded = !plasmoid.expanded
                     }
@@ -379,6 +380,11 @@ PlasmoidItem {
     }
 
     function updateQuickActionProjects() {
+        if (!quickActionProjects || !projects.length) {
+            console.log("Kimai: No quick actions or projects to process");
+            quickActionActivitiesList = [];
+            return;
+        }
         quickActionProjectsList = []
         quickActionActivitiesList = []
         
@@ -444,6 +450,10 @@ PlasmoidItem {
                 // Load activities for this project
                 (function(pid, pname, targetActIds) {
                     loadActivitiesForProjectId(pid, function(loadedActivities) {
+                        if (!loadedActivities || !Array.isArray(loadedActivities)) {
+                            console.log("Kimai: Failed to load activities for project", pid)
+                            loadedActivities = []
+                        }
                         console.log("Kimai: Loaded activities for project", pid, "count:", loadedActivities ? loadedActivities.length : 0)
                         var localActivities = []
                         if (loadedActivities) {
@@ -513,13 +523,16 @@ PlasmoidItem {
     }
 
     function loadProjects() {
-        if (!kimaiUrl || !apiToken) {
-            console.log("Kimai: Cannot load projects - missing kimaiUrl or apiToken")
-            return
-        }
+        if (isLoadingProjects || !kimaiUrl || !apiToken) return
+            isLoadingProjects = true
 
+        projects = []
+        activities = []
+        quickActionProjectsList = []
+        quickActionActivitiesList = []
         console.log("Kimai: Loading projects from API...")
         KimaiApi.loadProjects(kimaiUrl, apiToken, function(loadedProjects) {
+            isLoadingProjects = false
             if (loadedProjects) {
                 projects = loadedProjects
                 console.log("Kimai: Loaded", loadedProjects.length, "projects")
