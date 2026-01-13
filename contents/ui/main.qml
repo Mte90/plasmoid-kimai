@@ -26,6 +26,8 @@ PlasmoidItem {
     property var activities: []
     property var quickActionProjectsList: []
     property var quickActionActivitiesList: []
+    property bool isLoadingProjects: false
+    property bool isUpdatingQuickActions: false
 
     // Tooltip
     toolTipMainText: "Kimai Tracker"
@@ -380,9 +382,17 @@ PlasmoidItem {
     }
 
     function updateQuickActionProjects() {
+        if (isUpdatingQuickActions) {
+            console.log("Kimai: updateQuickActionProjects already running, skipping")
+            return
+        }
+        
+        isUpdatingQuickActions = true
+        
         if (!quickActionProjects || !projects.length) {
             console.log("Kimai: No quick actions or projects to process");
             quickActionActivitiesList = [];
+            isUpdatingQuickActions = false
             return;
         }
         quickActionProjectsList = []
@@ -495,6 +505,7 @@ PlasmoidItem {
                                 var qa = quickActionActivitiesList[i]
                                 console.log("Kimai: Quick action", i, ":", qa.projectName, "-", qa.activityName)
                             }
+                            isUpdatingQuickActions = false
                         }
                     })
                 })(projectIdNum, projectName, targetActivities[projId])
@@ -529,8 +540,17 @@ PlasmoidItem {
     }
 
     function loadProjects() {
-        if (isLoadingProjects || !kimaiUrl || !apiToken) return
-            isLoadingProjects = true
+        if (!kimaiUrl || !apiToken) {
+            console.log("Kimai: Cannot load projects - missing kimaiUrl or apiToken")
+            return
+        }
+        
+        if (isLoadingProjects) {
+            console.log("Kimai: Already loading projects, skipping duplicate request")
+            return
+        }
+        
+        isLoadingProjects = true
 
         projects = []
         activities = []
