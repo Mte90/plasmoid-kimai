@@ -78,10 +78,14 @@ function loadProjects(kimaiUrl, apiToken, callback) {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
                 try {
+                    console.log("Kimai API: Parsing projects response, length:", xhr.responseText.length)
                     var projects = JSON.parse(xhr.responseText);
+                    console.log("Kimai API: Successfully parsed", projects.length, "projects")
                     callback(projects);
                 } catch (e) {
-                    console.error("Failed to parse projects:", e, xhr.responseText);
+                    console.error("Failed to parse projects:", e, "Error name:", e.name, "Error message:", e.message);
+                    console.error("Error stack:", e.stack);
+                    console.error("Response text:", xhr.responseText);
                     callback([]);
                 }
             } else {
@@ -113,10 +117,14 @@ function loadActivities(kimaiUrl, apiToken, projectId, callback) {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
                 try {
+                    console.log("Kimai API: Parsing activities response for project", projectId, "length:", xhr.responseText.length)
                     var activities = JSON.parse(xhr.responseText)
+                    console.log("Kimai API: Successfully parsed", activities.length, "activities for project", projectId)
                     callback(activities)
                 } catch (e) {
-                    console.error("Failed to parse activities:", e, "Response:", xhr.responseText)
+                    console.error("Failed to parse activities for project", projectId, ":", e, "Error name:", e.name, "Error message:", e.message)
+                    console.error("Error stack:", e.stack)
+                    console.error("Response text:", xhr.responseText)
                     callback(null)
                 }
             } else {

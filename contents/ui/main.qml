@@ -142,7 +142,7 @@ PlasmoidItem {
                 onClicked: {
                     // If not configured, open settings; otherwise expand popup
                     if (!kimaiUrl || !apiToken || quickActionActivitiesList.length === 0) {
-                        plasmoid.activateConfiguration()
+                        plasmoid.action("configure").trigger()
                     } else {
                         plasmoid.expanded = !plasmoid.expanded
                     }
