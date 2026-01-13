@@ -68,30 +68,37 @@ function testConnection(kimaiUrl, apiToken, callback) {
  */
 function loadProjects(kimaiUrl, apiToken, callback) {
     if (!kimaiUrl || !apiToken) {
-        callback(null)
-        return
+        callback([]);
+        return;
     }
 
-    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/projects?visible=3&order=ASC&orderBy=name", apiToken, false)
-    
+    var xhr = createAuthenticatedRequest("GET", kimaiUrl, "/api/projects?visible=3&order=ASC&orderBy=name", apiToken, false);
+
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
                 try {
-                    var projects = JSON.parse(xhr.responseText)
-                    callback(projects)
+                    var projects = JSON.parse(xhr.responseText);
+                    callback(projects);
                 } catch (e) {
-                    console.error("Failed to parse projects:", e)
-                    callback(null)
+                    console.error("Failed to parse projects:", e, "Error name:", e.name, "Error message:", e.message);
+                    console.error("Error stack:", e.stack);
+                    console.error("Response text:", xhr.responseText);
+                    callback([]);
                 }
             } else {
-                console.error("Failed to load projects:", xhr.status, xhr.statusText)
-                callback(null)
+                console.error("Failed to load projects:", xhr.status, xhr.statusText);
+                callback([]);
             }
         }
-    }
-    
-    xhr.send()
+    };
+
+    xhr.onerror = function() {
+        console.error("Network error while loading projects")
+        callback([]);
+    };
+
+    xhr.send();
 }
 
 /**
@@ -116,14 +123,21 @@ function loadActivities(kimaiUrl, apiToken, projectId, callback) {
                     var activities = JSON.parse(xhr.responseText)
                     callback(activities)
                 } catch (e) {
-                    console.error("Failed to parse activities:", e)
+                    console.error("Failed to parse activities for project", projectId, ":", e, "Error name:", e.name, "Error message:", e.message)
+                    console.error("Error stack:", e.stack)
+                    console.error("Response text:", xhr.responseText)
                     callback(null)
                 }
             } else {
-                console.error("Failed to load activities:", xhr.status, xhr.statusText)
+                console.error("Failed to load activities for project", projectId, ":", xhr.status, xhr.statusText)
                 callback(null)
             }
         }
+    }
+    
+    xhr.onerror = function() {
+        console.error("Network error while loading activities for project", projectId)
+        callback(null)
     }
     
     xhr.send()

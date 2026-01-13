@@ -67,8 +67,20 @@ For QML debugging, set:
 export QML_DISABLE_OPTIMIZER=1
 ```
 
-Test in isolation with:
+**Testing the compact representation (panel icons):**
 ```bash
+# Use plasmoidviewer with parameters to simulate a horizontal panel
+plasmoidviewer -a com.mte90.kimaitracker -l topedge -f horizontal
+
+# Or test in an actual panel for most accurate results
+kpackagetool6 -u . -t Plasma/Applet
+plasmashell --replace &
+# Then add/configure the widget in your actual panel
+```
+
+**Testing the full representation (popup):**
+```bash
+# plasmoidviewer can be used for testing the popup interface
 plasmoidviewer -a com.mte90.kimaitracker
 ```
 
@@ -87,14 +99,46 @@ kpackagetool6 -r com.mte90.kimaitracker -t Plasma/Applet
 2. **Configure API Settings:**
    - Right-click on the Kimai Tracker widget
    - Select "Configure..."
+   - Go to the "General" tab
    - Enter your Kimai server URL (e.g., `https://your-kimai-instance.com`)
    - Enter your API token (you can generate this in your Kimai user settings)
+   - Click "Test Connection" to verify your settings
    - Save the configuration
+
+3. **Configure Quick Actions (Recommended):**
+   - Right-click on the Kimai Tracker widget
+   - Select "Configure..."
+   - Go to the "Quick Actions" tab
+   - Click on a project from the left list
+   - Check the activities you want as quick actions from the right list
+   - You can select multiple project-activity combinations
+   - Save the configuration
+   - **Multiple icons will now appear in your panel**, one for each configured quick action
 
 ### Tracking Time
 
+#### Quick Actions (Multiple Panel Icons)
+
+Once you have configured quick actions, you'll see **multiple icons in the panel**, one for each activity:
+
 1. **Start Tracking:**
-   - Click on the Kimai Tracker widget
+   - **Left-click** any quick action icon to start tracking that specific activity
+   - The icon changes from play to stop when tracking is active
+   - Hover over an icon to see which project-activity it represents
+
+2. **Stop Tracking:**
+   - **Left-click** the stop icon (of the currently tracking activity) to stop
+   - The icon changes back to a play icon
+
+3. **No Quick Actions Configured:**
+   - If no quick actions are configured, a single icon is shown
+   - Click it to open the full widget for manual selection
+
+#### Manual Selection (Full Widget)
+
+1. **Start Tracking:**
+   - **Right-click** any panel icon and the widget will expand
+   - Or click the single icon if no quick actions are configured
    - Select a project and activity from the available options
    - Click "Start" to begin tracking time
 
@@ -108,8 +152,10 @@ kpackagetool6 -r com.mte90.kimaitracker -t Plasma/Applet
 
 ### Tips
 
+- **Configure quick actions** for your most frequently used project-activity combinations
+- **Each quick action gets its own icon** in the panel for instant one-click access
 - Keep the widget visible in your panel for quick access
-- Use keyboard shortcuts (if configured) for faster time tracking
+- Hover over icons to see which activity they represent
 - Regularly sync your entries to ensure data is saved to the Kimai server
 
 ## Contributing
