@@ -93,7 +93,7 @@ kpackagetool6 -r com.mte90.kimaitracker -t Plasma/Applet
    - Click "Test Connection" to verify your settings
    - Save the configuration
 
-3. **Configure Quick Actions (Optional but Recommended):**
+3. **Configure Quick Actions (Recommended):**
    - Right-click on the Kimai Tracker widget
    - Select "Configure..."
    - Go to the "Quick Actions" tab
@@ -101,28 +101,32 @@ kpackagetool6 -r com.mte90.kimaitracker -t Plasma/Applet
    - Check the activities you want as quick actions from the right list
    - You can select multiple project-activity combinations
    - Save the configuration
-   - Now you can quickly start tracking by clicking the panel icon
+   - **Multiple icons will now appear in your panel**, one for each configured quick action
 
 ### Tracking Time
 
-#### Quick Actions (Panel Icon)
+#### Quick Actions (Multiple Panel Icons)
 
-Once you have configured quick actions (see Configuration section):
+Once you have configured quick actions, you'll see **multiple icons in the panel**, one for each activity:
 
-1. **Start Tracking with Quick Actions:**
-   - **Left-click** the panel icon to start tracking the next quick action
-   - Each click cycles through your configured quick actions
-   - The tooltip shows which activity will be started next
-   - **Middle-click** the panel icon to preview the next action without starting it
+1. **Start Tracking:**
+   - **Left-click** any quick action icon to start tracking that specific activity
+   - The icon changes from play to stop when tracking is active
+   - Hover over an icon to see which project-activity it represents
 
 2. **Stop Tracking:**
-   - **Left-click** the panel icon while tracking to stop the current timer
-   - **Right-click** opens the full widget for more options
+   - **Left-click** the stop icon (of the currently tracking activity) to stop
+   - The icon changes back to a play icon
+
+3. **No Quick Actions Configured:**
+   - If no quick actions are configured, a single icon is shown
+   - Click it to open the full widget for manual selection
 
 #### Manual Selection (Full Widget)
 
-1. **Start Tracking Manually:**
-   - Click on the Kimai Tracker widget to expand it
+1. **Start Tracking:**
+   - **Right-click** any panel icon and the widget will expand
+   - Or click the single icon if no quick actions are configured
    - Select a project and activity from the available options
    - Click "Start" to begin tracking time
 
@@ -136,10 +140,10 @@ Once you have configured quick actions (see Configuration section):
 
 ### Tips
 
-- Configure quick actions for your most common project-activity combinations
+- **Configure quick actions** for your most frequently used project-activity combinations
+- **Each quick action gets its own icon** in the panel for instant one-click access
 - Keep the widget visible in your panel for quick access
-- Use left-click to cycle through and start different quick actions
-- Use middle-click to preview which action will start next
+- Hover over icons to see which activity they represent
 - Regularly sync your entries to ensure data is saved to the Kimai server
 
 ## Contributing

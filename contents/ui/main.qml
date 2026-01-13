@@ -25,7 +25,6 @@ PlasmoidItem {
     property var activities: []
     property var quickActionProjectsList: []
     property var quickActionActivitiesList: []
-    property int currentQuickActionIndex: 0
 
     // Tooltip
     toolTipMainText: "Kimai Tracker"
@@ -33,14 +32,7 @@ PlasmoidItem {
         if (isTracking) {
             return i18n("%1 - Tracking (%2)", currentProject, formatTime(elapsedSeconds))
         } else if (quickActionActivitiesList.length > 0) {
-            // Ensure index is within bounds
-            var index = currentQuickActionIndex % quickActionActivitiesList.length
-            var nextAction = quickActionActivitiesList[index]
-            if (nextAction) {
-                return i18n("Click to start: %1 - %2", nextAction.projectName, nextAction.activityName)
-            } else {
-                return i18n("%1 quick actions configured", quickActionActivitiesList.length)
-            }
+            return i18n("%1 quick actions configured", quickActionActivitiesList.length)
         } else {
             return i18n("Click to start tracking")
         }
@@ -68,34 +60,101 @@ PlasmoidItem {
         }
     }
 
-    // Compact representation (icon in panel)
+    // Compact representation (icons in panel)
     compactRepresentation: Item {
-        Layout.minimumWidth: Kirigami.Units.iconSizes.small
+        // Show multiple icons if quick actions are configured, otherwise show single icon
+        Layout.minimumWidth: quickActionActivitiesList.length > 0 ? 
+            (Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing) * quickActionActivitiesList.length - Kirigami.Units.smallSpacing :
+            Kirigami.Units.iconSizes.small
         Layout.minimumHeight: Kirigami.Units.iconSizes.small
+        Layout.preferredWidth: Layout.minimumWidth
 
-        Kirigami.Icon {
+        // Show quick action icons if configured
+        Row {
+            id: quickActionsRow
             anchors.fill: parent
-            source:
-                if (isTracking) {
-                    return Qt.resolvedUrl("../images/stop.png")
-                } else {
-                    return Qt.resolvedUrl("../images/play.png")
+            spacing: Kirigami.Units.smallSpacing
+            visible: quickActionActivitiesList.length > 0
+
+            Repeater {
+                model: quickActionActivitiesList
+
+                Item {
+                    width: Kirigami.Units.iconSizes.small
+                    height: Kirigami.Units.iconSizes.small
+
+                    Kirigami.Icon {
+                        anchors.fill: parent
+                        source: {
+                            var isThisTracking = isTracking && 
+                                currentProject === modelData.projectName && 
+                                currentActivity === modelData.activityName
+                            return isThisTracking ? 
+                                Qt.resolvedUrl("../images/stop.png") : 
+                                Qt.resolvedUrl("../images/play.png")
+                        }
+                        active: quickActionMouse.containsMouse
+                    }
+
+                    MouseArea {
+                        id: quickActionMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                        PlasmaComponents3.ToolTip {
+                            text: modelData.projectName + " - " + modelData.activityName
+                        }
+
+                        onClicked: function(mouse) {
+                            if (mouse.button === Qt.LeftButton) {
+                                var isThisTracking = isTracking && 
+                                    currentProject === modelData.projectName && 
+                                    currentActivity === modelData.activityName
+                                
+                                if (isThisTracking) {
+                                    stopTracking()
+                                } else if (!isTracking) {
+                                    startTrackingProjectActivity(
+                                        modelData.projectId, 
+                                        modelData.projectName, 
+                                        modelData.activityId, 
+                                        modelData.activityName
+                                    )
+                                }
+                            } else if (mouse.button === Qt.RightButton) {
+                                plasmoid.expanded = !plasmoid.expanded
+                            }
+                        }
+                    }
                 }
-            active: compactMouse.containsMouse
+            }
         }
 
-        MouseArea {
-            id: compactMouse
+        // Fallback single icon when no quick actions configured
+        Item {
             anchors.fill: parent
-            hoverEnabled: true
-            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-            onClicked: function(mouse) {
-                if (mouse.button === Qt.LeftButton) {
-                    handleCompactClick()
-                } else if (mouse.button === Qt.MiddleButton) {
-                    handleMiddleClick()
-                } else if (mouse.button === Qt.RightButton) {
-                    plasmoid.expanded = !plasmoid.expanded
+            visible: quickActionActivitiesList.length === 0
+
+            Kirigami.Icon {
+                anchors.fill: parent
+                source: isTracking ? 
+                    Qt.resolvedUrl("../images/stop.png") : 
+                    Qt.resolvedUrl("../images/play.png")
+                active: fallbackMouse.containsMouse
+            }
+
+            MouseArea {
+                id: fallbackMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: function(mouse) {
+                    if (mouse.button === Qt.LeftButton) {
+                        plasmoid.expanded = !plasmoid.expanded
+                    } else if (mouse.button === Qt.RightButton) {
+                        plasmoid.expanded = !plasmoid.expanded
+                    }
                 }
             }
         }
@@ -285,34 +344,6 @@ PlasmoidItem {
     }
 
     // Helper functions
-    function handleMiddleClick() {
-        // Cycle through quick actions without starting them
-        if (quickActionActivitiesList.length > 0 && !isTracking) {
-            currentQuickActionIndex = (currentQuickActionIndex + 1) % quickActionActivitiesList.length
-        }
-    }
-
-    function handleCompactClick() {
-        if (isTracking) {
-            // Stop current tracking
-            stopTracking()
-        } else {
-            // Cycle through quick actions, or expand if none configured
-            if (quickActionActivitiesList.length > 0 && kimaiUrl && apiToken) {
-                var action = quickActionActivitiesList[currentQuickActionIndex % quickActionActivitiesList.length]
-                if (action && action.projectId && action.activityId) {
-                    startTrackingProjectActivity(action.projectId, action.projectName, action.activityId, action.activityName)
-                    // Move to next action for next click
-                    currentQuickActionIndex = (currentQuickActionIndex + 1) % quickActionActivitiesList.length
-                } else {
-                    plasmoid.expanded = !plasmoid.expanded
-                }
-            } else {
-                plasmoid.expanded = !plasmoid.expanded
-            }
-        }
-    }
-
     function formatTime(seconds) {
         var hours = Math.floor(seconds / 3600)
         var minutes = Math.floor((seconds % 3600) / 60)
