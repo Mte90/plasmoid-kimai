@@ -382,12 +382,16 @@ PlasmoidItem {
         quickActionProjectsList = []
         quickActionActivitiesList = []
         
+        console.log("Kimai: updateQuickActionProjects called, quickActionProjects:", quickActionProjects, "projects.length:", projects.length)
+        
         if (!quickActionProjects || !projects.length) {
+            console.log("Kimai: No quick actions or projects to process")
             return
         }
 
         // Parse project:activity pairs separated by semicolons
         var pairs = quickActionProjects.split(';')
+        console.log("Kimai: Processing", pairs.length, "project:activity pairs")
         var uniqueProjectIds = {}
         var targetActivities = {}
         
@@ -467,6 +471,7 @@ PlasmoidItem {
                                 }
                             }
                             quickActionActivitiesList = finalList
+                            console.log("Kimai: Updated quick actions list, count:", quickActionActivitiesList.length)
                         }
                     })
                 })(projectIdNum, projectName, targetActivities[projId])
@@ -500,13 +505,18 @@ PlasmoidItem {
 
     function loadProjects() {
         if (!kimaiUrl || !apiToken) {
+            console.log("Kimai: Cannot load projects - missing kimaiUrl or apiToken")
             return
         }
 
+        console.log("Kimai: Loading projects from API...")
         KimaiApi.loadProjects(kimaiUrl, apiToken, function(loadedProjects) {
             if (loadedProjects) {
                 projects = loadedProjects
+                console.log("Kimai: Loaded", loadedProjects.length, "projects")
                 updateQuickActionProjects()
+            } else {
+                console.log("Kimai: Failed to load projects from API")
             }
         })
     }
@@ -621,8 +631,11 @@ PlasmoidItem {
     onQuickActionProjectsChanged: {
         // When quick actions configuration changes, reload projects first
         // then update quick actions to ensure we have the latest data
+        console.log("Kimai: Quick action projects configuration changed:", quickActionProjects)
         if (kimaiUrl && apiToken) {
             loadProjects()
+        } else {
+            console.log("Kimai: Cannot reload - missing kimaiUrl or apiToken")
         }
     }
 }

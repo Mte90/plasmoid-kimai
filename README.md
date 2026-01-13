@@ -69,8 +69,10 @@ export QML_DISABLE_OPTIMIZER=1
 
 **Testing the compact representation (panel icons):**
 ```bash
-# plasmoidviewer doesn't properly show the compact representation in a panel
-# You must test in an actual panel for accurate results
+# Use plasmoidviewer with parameters to simulate a horizontal panel
+plasmoidviewer -a com.mte90.kimaitracker -l topedge -f horizontal
+
+# Or test in an actual panel for most accurate results
 kpackagetool6 -u . -t Plasma/Applet
 plasmashell --replace &
 # Then add/configure the widget in your actual panel
