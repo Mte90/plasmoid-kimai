@@ -33,8 +33,10 @@ PlasmoidItem {
             return i18n("%1 - Tracking (%2)", currentProject, formatTime(elapsedSeconds))
         } else if (quickActionActivitiesList.length > 0) {
             return i18n("%1 quick actions configured", quickActionActivitiesList.length)
+        } else if (kimaiUrl && apiToken) {
+            return i18n("Right-click to configure quick actions")
         } else {
-            return i18n("Click to start tracking")
+            return i18n("Right-click to configure")
         }
     }
 
@@ -101,7 +103,7 @@ PlasmoidItem {
                             text: modelData.projectName + " - " + modelData.activityName
                         }
 
-                        onClicked: function(mouse) {
+                        onClicked: {
                             if (isActivityTracking(modelData.projectName, modelData.activityName)) {
                                 stopTracking()
                             } else if (!isTracking) {
@@ -137,7 +139,12 @@ PlasmoidItem {
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
                 onClicked: {
-                    plasmoid.expanded = !plasmoid.expanded
+                    // If not configured, open settings; otherwise expand popup
+                    if (!kimaiUrl || !apiToken || quickActionActivitiesList.length === 0) {
+                        plasmoid.action("configure").trigger()
+                    } else {
+                        plasmoid.expanded = !plasmoid.expanded
+                    }
                 }
             }
         }
@@ -612,6 +619,10 @@ PlasmoidItem {
     }
 
     onQuickActionProjectsChanged: {
-        updateQuickActionProjects()
+        // When quick actions configuration changes, reload projects first
+        // then update quick actions to ensure we have the latest data
+        if (kimaiUrl && apiToken) {
+            loadProjects()
+        }
     }
 }
