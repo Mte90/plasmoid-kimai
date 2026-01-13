@@ -67,8 +67,18 @@ For QML debugging, set:
 export QML_DISABLE_OPTIMIZER=1
 ```
 
-Test in isolation with:
+**Testing the compact representation (panel icons):**
 ```bash
+# plasmoidviewer doesn't properly show the compact representation in a panel
+# You must test in an actual panel for accurate results
+kpackagetool6 -u . -t Plasma/Applet
+plasmashell --replace &
+# Then add/configure the widget in your actual panel
+```
+
+**Testing the full representation (popup):**
+```bash
+# plasmoidviewer can be used for testing the popup interface
 plasmoidviewer -a com.mte90.kimaitracker
 ```
 
