@@ -394,15 +394,11 @@ PlasmoidItem {
             isUpdatingQuickActions = false
             return;
         }
+        
         quickActionProjectsList = []
         quickActionActivitiesList = []
         
         console.log("Kimai: updateQuickActionProjects called, quickActionProjects:", quickActionProjects, "projects.length:", projects.length)
-        
-        if (!quickActionProjects || !projects.length) {
-            console.log("Kimai: No quick actions or projects to process")
-            return
-        }
 
         // Parse project:activity pairs separated by semicolons
         var pairs = quickActionProjects.split(';')
@@ -442,6 +438,8 @@ PlasmoidItem {
         }
         
         if (projectCount === 0) {
+            console.log("Kimai: No projects to load activities for")
+            isUpdatingQuickActions = false
             return
         }
         
