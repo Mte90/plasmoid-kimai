@@ -439,15 +439,19 @@ PlasmoidItem {
                 var projectIdNum = parseInt(projId)
                 var projectName = projectIdToName[projectIdNum] || ""
                 
+                console.log("Kimai: Loading activities for project", projectIdNum, "(" + projectName + ")")
+                
                 // Load activities for this project
                 (function(pid, pname, targetActIds) {
                     loadActivitiesForProjectId(pid, function(loadedActivities) {
+                        console.log("Kimai: Loaded activities for project", pid, "count:", loadedActivities ? loadedActivities.length : 0)
                         var localActivities = []
                         if (loadedActivities) {
                             for (var k = 0; k < loadedActivities.length; k++) {
                                 var activity = loadedActivities[k]
                                 // Check if this activity is in our target list
                                 if (targetActIds.indexOf(activity.id) !== -1) {
+                                    console.log("Kimai: Matched activity", activity.id, activity.name, "for project", pid)
                                     localActivities.push({
                                         projectId: pid,
                                         projectName: pname,
@@ -460,9 +464,11 @@ PlasmoidItem {
                         
                         // Store this project's activities
                         activitiesByProject[pid] = localActivities
+                        console.log("Kimai: Project", pid, "has", localActivities.length, "matching activities")
                         
                         // Increment counter and merge all results when all are loaded
                         loadedCount++
+                        console.log("Kimai: Loaded", loadedCount, "of", projectCount, "projects")
                         if (loadedCount === projectCount) {
                             var finalList = []
                             for (var p in activitiesByProject) {
@@ -470,8 +476,11 @@ PlasmoidItem {
                                     finalList = finalList.concat(activitiesByProject[p])
                                 }
                             }
+                            // Force property change notification by creating new array reference
+                            quickActionActivitiesList = []
                             quickActionActivitiesList = finalList
                             console.log("Kimai: Updated quick actions list, count:", quickActionActivitiesList.length)
+                            console.log("Kimai: Quick actions:", JSON.stringify(quickActionActivitiesList))
                         }
                     })
                 })(projectIdNum, projectName, targetActivities[projId])
@@ -617,6 +626,11 @@ PlasmoidItem {
     Component.onCompleted: {
         // Initialize the plasmoid
         refreshApiData()
+    }
+
+    // Watch for quick actions list changes
+    onQuickActionActivitiesListChanged: {
+        console.log("Kimai: quickActionActivitiesList changed! New count:", quickActionActivitiesList.length)
     }
 
     // Reload projects when configuration changes
