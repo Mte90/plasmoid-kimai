@@ -26,7 +26,6 @@ PlasmoidItem {
     property var activities: []
     property var quickActionProjectsList: []
     property var quickActionActivitiesList: []
-    property bool isLoadingProjects: false
     property bool isUpdatingQuickActions: false
 
     // Tooltip
