@@ -116,7 +116,7 @@ function loadActivities(kimaiUrl, apiToken, projectId, callback) {
                     var activities = JSON.parse(xhr.responseText)
                     callback(activities)
                 } catch (e) {
-                    console.error("Failed to parse activities:", e)
+                    console.error("Failed to parse activities:", e, "Response:", xhr.responseText)
                     callback(null)
                 }
             } else {
@@ -124,6 +124,11 @@ function loadActivities(kimaiUrl, apiToken, projectId, callback) {
                 callback(null)
             }
         }
+    }
+    
+    xhr.onerror = function() {
+        console.error("Network error while loading activities for project", projectId)
+        callback(null)
     }
     
     xhr.send()

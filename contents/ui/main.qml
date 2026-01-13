@@ -490,7 +490,11 @@ PlasmoidItem {
                             quickActionActivitiesList = []
                             quickActionActivitiesList = finalList
                             console.log("Kimai: Updated quick actions list, count:", quickActionActivitiesList.length)
-                            console.log("Kimai: Quick actions:", JSON.stringify(quickActionActivitiesList))
+                            // Log details without JSON.stringify to avoid potential issues
+                            for (var i = 0; i < quickActionActivitiesList.length; i++) {
+                                var qa = quickActionActivitiesList[i]
+                                console.log("Kimai: Quick action", i, ":", qa.projectName, "-", qa.activityName)
+                            }
                         }
                     })
                 })(projectIdNum, projectName, targetActivities[projId])
@@ -516,6 +520,8 @@ PlasmoidItem {
 
     function loadActivitiesForProjectId(projectId, callback) {
         if (!kimaiUrl || !apiToken) {
+            console.log("Kimai: Cannot load activities - missing credentials")
+            callback(null)
             return
         }
 
