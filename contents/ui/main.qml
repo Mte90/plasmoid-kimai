@@ -85,14 +85,9 @@ PlasmoidItem {
 
                     Kirigami.Icon {
                         anchors.fill: parent
-                        source: {
-                            var isThisTracking = isTracking && 
-                                currentProject === modelData.projectName && 
-                                currentActivity === modelData.activityName
-                            return isThisTracking ? 
-                                Qt.resolvedUrl("../images/stop.png") : 
-                                Qt.resolvedUrl("../images/play.png")
-                        }
+                        source: isActivityTracking(modelData.projectName, modelData.activityName) ? 
+                            Qt.resolvedUrl("../images/stop.png") : 
+                            Qt.resolvedUrl("../images/play.png")
                         active: quickActionMouse.containsMouse
                     }
 
@@ -108,11 +103,7 @@ PlasmoidItem {
 
                         onClicked: function(mouse) {
                             if (mouse.button === Qt.LeftButton) {
-                                var isThisTracking = isTracking && 
-                                    currentProject === modelData.projectName && 
-                                    currentActivity === modelData.activityName
-                                
-                                if (isThisTracking) {
+                                if (isActivityTracking(modelData.projectName, modelData.activityName)) {
                                     stopTracking()
                                 } else if (!isTracking) {
                                     startTrackingProjectActivity(
@@ -149,12 +140,8 @@ PlasmoidItem {
                 anchors.fill: parent
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onClicked: function(mouse) {
-                    if (mouse.button === Qt.LeftButton) {
-                        plasmoid.expanded = !plasmoid.expanded
-                    } else if (mouse.button === Qt.RightButton) {
-                        plasmoid.expanded = !plasmoid.expanded
-                    }
+                onClicked: {
+                    plasmoid.expanded = !plasmoid.expanded
                 }
             }
         }
@@ -344,6 +331,10 @@ PlasmoidItem {
     }
 
     // Helper functions
+    function isActivityTracking(projectName, activityName) {
+        return isTracking && currentProject === projectName && currentActivity === activityName
+    }
+
     function formatTime(seconds) {
         var hours = Math.floor(seconds / 3600)
         var minutes = Math.floor((seconds % 3600) / 60)
