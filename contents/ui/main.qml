@@ -95,26 +95,22 @@ PlasmoidItem {
                         id: quickActionMouse
                         anchors.fill: parent
                         hoverEnabled: true
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                        acceptedButtons: Qt.LeftButton
 
                         PlasmaComponents3.ToolTip {
                             text: modelData.projectName + " - " + modelData.activityName
                         }
 
                         onClicked: function(mouse) {
-                            if (mouse.button === Qt.LeftButton) {
-                                if (isActivityTracking(modelData.projectName, modelData.activityName)) {
-                                    stopTracking()
-                                } else if (!isTracking) {
-                                    startTrackingProjectActivity(
-                                        modelData.projectId, 
-                                        modelData.projectName, 
-                                        modelData.activityId, 
-                                        modelData.activityName
-                                    )
-                                }
-                            } else if (mouse.button === Qt.RightButton) {
-                                plasmoid.expanded = !plasmoid.expanded
+                            if (isActivityTracking(modelData.projectName, modelData.activityName)) {
+                                stopTracking()
+                            } else if (!isTracking) {
+                                startTrackingProjectActivity(
+                                    modelData.projectId, 
+                                    modelData.projectName, 
+                                    modelData.activityId, 
+                                    modelData.activityName
+                                )
                             }
                         }
                     }
@@ -139,7 +135,7 @@ PlasmoidItem {
                 id: fallbackMouse
                 anchors.fill: parent
                 hoverEnabled: true
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                acceptedButtons: Qt.LeftButton
                 onClicked: {
                     plasmoid.expanded = !plasmoid.expanded
                 }
