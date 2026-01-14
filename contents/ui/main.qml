@@ -85,15 +85,23 @@ PlasmoidItem {
                 model: quickActionActivitiesList
 
                 Item {
-                    width: Kirigami.Units.iconSizes.small
-                    height: Kirigami.Units.iconSizes.small
+                    implicitWidth: row.implicitWidth
+                    implicitHeight: row.implicitHeight
 
                     Kirigami.Icon {
+                        width: Kirigami.Units.iconSizes.medium
+                        height: Kirigami.Units.iconSizes.medium
                         anchors.fill: parent
                         source: isActivityTracking(modelData.projectName, modelData.activityName) ? 
                             Qt.resolvedUrl("../images/stop.png") : 
                             Qt.resolvedUrl("../images/play.png")
                         active: quickActionMouse.containsMouse
+                    }
+
+                    PlasmaComponents3.Label {
+                        text: modelData.activityName
+                        elide: Text.ElideRight
+                        font.pointSize: Kirigami.Theme.smallFont.pointSize
                     }
 
                     MouseArea {
