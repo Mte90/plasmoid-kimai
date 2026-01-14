@@ -68,10 +68,10 @@ PlasmoidItem {
     // Compact representation (icons in panel)
     compactRepresentation: Item {
         // Show multiple icons if quick actions are configured, otherwise show single icon
-        Layout.minimumWidth: quickActionActivitiesList.length > 0 ? 
-            (Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing) * quickActionActivitiesList.length - Kirigami.Units.smallSpacing :
-            Kirigami.Units.iconSizes.small
-        Layout.minimumHeight: Kirigami.Units.iconSizes.small
+        Layout.minimumWidth: quickActionActivitiesList.length > 0 ?
+        (Kirigami.Units.iconSizes.medium + Kirigami.Units.smallSpacing + 50) * quickActionActivitiesList.length - Kirigami.Units.smallSpacing :
+        Kirigami.Units.iconSizes.medium
+        Layout.minimumHeight: Kirigami.Units.iconSizes.medium
         Layout.preferredWidth: Layout.minimumWidth
 
         // Show quick action icons if configured
@@ -85,24 +85,30 @@ PlasmoidItem {
                 model: quickActionActivitiesList
 
                 Item {
+                    Row {
+                        id: row
+                        spacing: Kirigami.Units.smallSpacing
+
+                        Kirigami.Icon {
+                            id: icon
+                            width: Kirigami.Units.iconSizes.medium
+                            height: Kirigami.Units.iconSizes.medium
+                            source: isActivityTracking(modelData.projectName, modelData.activityName) ?
+                            Qt.resolvedUrl("../images/stop.png") :
+                            Qt.resolvedUrl("../images/play.png")
+                            active: quickActionMouse.containsMouse
+                        }
+
+                        PlasmaComponents3.Label {
+                            id: label
+                            text: modelData.activityName
+                            elide: Text.ElideRight
+                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            anchors.verticalCenter: icon.verticalCenter
+                        }
+                    }
                     implicitWidth: row.implicitWidth
                     implicitHeight: row.implicitHeight
-
-                    Kirigami.Icon {
-                        width: Kirigami.Units.iconSizes.medium
-                        height: Kirigami.Units.iconSizes.medium
-                        anchors.fill: parent
-                        source: isActivityTracking(modelData.projectName, modelData.activityName) ? 
-                            Qt.resolvedUrl("../images/stop.png") : 
-                            Qt.resolvedUrl("../images/play.png")
-                        active: quickActionMouse.containsMouse
-                    }
-
-                    PlasmaComponents3.Label {
-                        text: modelData.activityName
-                        elide: Text.ElideRight
-                        font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    }
 
                     MouseArea {
                         id: quickActionMouse
@@ -119,9 +125,9 @@ PlasmoidItem {
                                 stopTracking()
                             } else if (!isTracking) {
                                 startTrackingProjectActivity(
-                                    modelData.projectId, 
-                                    modelData.projectName, 
-                                    modelData.activityId, 
+                                    modelData.projectId,
+                                    modelData.projectName,
+                                    modelData.activityId,
                                     modelData.activityName
                                 )
                             }
@@ -138,9 +144,9 @@ PlasmoidItem {
 
             Kirigami.Icon {
                 anchors.fill: parent
-                source: isTracking ? 
-                    Qt.resolvedUrl("../images/stop.png") : 
-                    Qt.resolvedUrl("../images/play.png")
+                source: isTracking ?
+                Qt.resolvedUrl("../images/stop.png") :
+                Qt.resolvedUrl("../images/play.png")
                 active: fallbackMouse.containsMouse
             }
 
@@ -190,9 +196,9 @@ PlasmoidItem {
 
                 PlasmaComponents3.Label {
                     Layout.fillWidth: true
-                    text: kimaiUrl && apiToken ? 
-                        i18n("Connected to %1", kimaiUrl) : 
-                        i18n("Not configured - right-click to configure")
+                    text: kimaiUrl && apiToken ?
+                    i18n("Connected to %1", kimaiUrl) :
+                    i18n("Not configured - right-click to configure")
                     elide: Text.ElideRight
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
                 }
@@ -354,8 +360,8 @@ PlasmoidItem {
         var minutes = Math.floor((seconds % 3600) / 60)
         var secs = seconds % 60
         return (hours < 10 ? "0" : "") + hours + ":" +
-               (minutes < 10 ? "0" : "") + minutes + ":" +
-               (secs < 10 ? "0" : "") + secs
+        (minutes < 10 ? "0" : "") + minutes + ":" +
+        (secs < 10 ? "0" : "") + secs
     }
 
     function getProjectNames() {
@@ -398,13 +404,13 @@ PlasmoidItem {
                 }
             }
         }
-        
+
         // Store this project's activities
         activitiesByProject[pid] = localActivities
-        
+
         // Increment counter and check if all are loaded
         loadedCountRef++
-        
+
         if (loadedCountRef === projectCount) {
             // All projects loaded, merge the results
             var allActivities = []
@@ -413,16 +419,16 @@ PlasmoidItem {
                     allActivities = allActivities.concat(activitiesByProject[p])
                 }
             }
-            
+
             // Force property change notification
             quickActionActivitiesList = []
             quickActionActivitiesList = allActivities
-            
+
             for (var m = 0; m < allActivities.length; m++) {
             }
             isUpdatingQuickActions = false
         }
-        
+
         return loadedCountRef
     }
 
@@ -437,47 +443,47 @@ PlasmoidItem {
         if (isUpdatingQuickActions) {
             return
         }
-        
+
         isUpdatingQuickActions = true
-        
+
         if (!quickActionProjects || !projects.length) {
             quickActionActivitiesList = [];
             isUpdatingQuickActions = false
             return;
         }
-        
+
         quickActionProjectsList = []
         quickActionActivitiesList = []
-        
+
 
         // Parse project:activity pairs separated by semicolons
         var pairs = quickActionProjects.split(';')
         var uniqueProjectIds = {}
         var targetActivities = {}
-        
+
         // First pass: collect all unique project IDs and their target activities
         for (var i = 0; i < pairs.length; i++) {
             var pair = pairs[i].split(':')
             if (pair.length !== 2) continue
-            
-            var projectId = parseInt(pair[0])
-            var activityId = parseInt(pair[1])
-            
-            if (isNaN(projectId) || isNaN(activityId)) continue
-            
-            uniqueProjectIds[projectId] = true
-            if (!targetActivities[projectId]) {
-                targetActivities[projectId] = []
-            }
-            targetActivities[projectId].push(activityId)
+
+                var projectId = parseInt(pair[0])
+                var activityId = parseInt(pair[1])
+
+                if (isNaN(projectId) || isNaN(activityId)) continue
+
+                    uniqueProjectIds[projectId] = true
+                    if (!targetActivities[projectId]) {
+                        targetActivities[projectId] = []
+                    }
+                    targetActivities[projectId].push(activityId)
         }
-        
+
         // Create project ID to name map for O(n) lookup
         var projectIdToName = {}
         for (var j = 0; j < projects.length; j++) {
             projectIdToName[projects[j].id] = projects[j].name
         }
-        
+
         // Count how many projects we need to load
         var projectCount = 0
         for (var projId in uniqueProjectIds) {
@@ -485,74 +491,74 @@ PlasmoidItem {
                 projectCount++
             }
         }
-        
+
         if (projectCount === 0) {
             isUpdatingQuickActions = false
             return
         }
-        
+
         var loadedCount = 0
         var activitiesByProject = {}
-        
+
         // Second pass: load activities for each unique project
         for (var projId in uniqueProjectIds) {
             if (uniqueProjectIds.hasOwnProperty(projId)) {
                 var projectIdNum = parseInt(projId)
                 var projectName = projectIdToName[projectIdNum] || ""
-                
+
                 // Check if we have cached activities for this project
                 if (activitiesCache[projectIdNum]) {
                     loadedCount = processActivitiesForProject(projectIdNum, projectName, targetActivities[projectIdNum], activitiesCache[projectIdNum], activitiesByProject, loadedCount, projectCount)
                 } else {
-                    
+
                     // Load activities for this project
                     (function(pid, pname, targetActIds) {
-                    loadActivitiesForProjectId(pid, function(loadedActivities) {
-                        if (!loadedActivities || !Array.isArray(loadedActivities)) {
-                            loadedActivities = []
-                        } else {
-                            // Cache the loaded activities
-                            activitiesCache[pid] = loadedActivities
-                        }
-                        var localActivities = []
-                        if (loadedActivities) {
-                            for (var k = 0; k < loadedActivities.length; k++) {
-                                var activity = loadedActivities[k]
-                                // Check if this activity is in our target list
-                                if (targetActIds.indexOf(activity.id) !== -1) {
-                                    localActivities.push({
-                                        projectId: pid,
-                                        projectName: pname,
-                                        activityId: activity.id,
-                                        activityName: activity.name
-                                    })
+                        loadActivitiesForProjectId(pid, function(loadedActivities) {
+                            if (!loadedActivities || !Array.isArray(loadedActivities)) {
+                                loadedActivities = []
+                            } else {
+                                // Cache the loaded activities
+                                activitiesCache[pid] = loadedActivities
+                            }
+                            var localActivities = []
+                            if (loadedActivities) {
+                                for (var k = 0; k < loadedActivities.length; k++) {
+                                    var activity = loadedActivities[k]
+                                    // Check if this activity is in our target list
+                                    if (targetActIds.indexOf(activity.id) !== -1) {
+                                        localActivities.push({
+                                            projectId: pid,
+                                            projectName: pname,
+                                            activityId: activity.id,
+                                            activityName: activity.name
+                                        })
+                                    }
                                 }
                             }
-                        }
-                        
-                        // Store this project's activities
-                        activitiesByProject[pid] = localActivities
-                        
-                        // Increment counter and merge all results when all are loaded
-                        loadedCount++
-                        if (loadedCount === projectCount) {
-                            var finalList = []
-                            for (var p in activitiesByProject) {
-                                if (activitiesByProject.hasOwnProperty(p)) {
-                                    finalList = finalList.concat(activitiesByProject[p])
+
+                            // Store this project's activities
+                            activitiesByProject[pid] = localActivities
+
+                            // Increment counter and merge all results when all are loaded
+                            loadedCount++
+                            if (loadedCount === projectCount) {
+                                var finalList = []
+                                for (var p in activitiesByProject) {
+                                    if (activitiesByProject.hasOwnProperty(p)) {
+                                        finalList = finalList.concat(activitiesByProject[p])
+                                    }
                                 }
+                                // Force property change notification by creating new array reference
+                                quickActionActivitiesList = []
+                                quickActionActivitiesList = finalList
+                                // Log details without JSON.stringify to avoid potential issues
+                                for (var i = 0; i < quickActionActivitiesList.length; i++) {
+                                    var qa = quickActionActivitiesList[i]
+                                }
+                                isUpdatingQuickActions = false
                             }
-                            // Force property change notification by creating new array reference
-                            quickActionActivitiesList = []
-                            quickActionActivitiesList = finalList
-                            // Log details without JSON.stringify to avoid potential issues
-                            for (var i = 0; i < quickActionActivitiesList.length; i++) {
-                                var qa = quickActionActivitiesList[i]
-                            }
-                            isUpdatingQuickActions = false
-                        }
-                    })
-                })(projectIdNum, projectName, targetActivities[projectIdNum])
+                        })
+                    })(projectIdNum, projectName, targetActivities[projectIdNum])
                 }
             }
         }
@@ -587,11 +593,11 @@ PlasmoidItem {
         if (!kimaiUrl || !apiToken) {
             return
         }
-        
+
         if (isLoadingProjects) {
             return
         }
-        
+
         isLoadingProjects = true
 
         projects = []
@@ -619,7 +625,7 @@ PlasmoidItem {
         }
 
         var projectId = projects[projectIndex].id
-        
+
         KimaiApi.loadActivities(kimaiUrl, apiToken, projectId, function(loadedActivities) {
             if (loadedActivities) {
                 activities = loadedActivities
@@ -636,14 +642,14 @@ PlasmoidItem {
         KimaiApi.fetchActiveTimesheet(kimaiUrl, apiToken, function(activeTimesheets) {
             if (activeTimesheets && activeTimesheets.length > 0) {
                 var timesheet = activeTimesheets[0]
-                
+
                 // Only update if this is a new timesheet or we're not already tracking
                 if (currentTimeSheetId !== timesheet.id) {
                     isTracking = true
                     currentTimeSheetId = timesheet.id
                     currentProject = timesheet.project ? timesheet.project.name : ""
                     currentActivity = timesheet.activity ? timesheet.activity.name : ""
-                    
+
                     // Calculate elapsed seconds using UTC timestamps
                     var beginDate = new Date(timesheet.begin)
                     var now = new Date()
@@ -669,24 +675,24 @@ PlasmoidItem {
 
         var projectIndex = projectComboBox.currentIndex - 1
         var activityIndex = activityComboBox.currentIndex - 1
-        
-        if (projectIndex < 0 || projectIndex >= projects.length || 
+
+        if (projectIndex < 0 || projectIndex >= projects.length ||
             activityIndex < 0 || activityIndex >= activities.length) {
             return
-        }
-
-        var projectId = projects[projectIndex].id
-        var activityId = activities[activityIndex].id
-        
-        KimaiApi.startTracking(kimaiUrl, apiToken, projectId, activityId, function(success, response) {
-            if (success && response) {
-                isTracking = true
-                currentTimeSheetId = response.id
-                currentProject = projectComboBox.currentText
-                currentActivity = activityComboBox.currentText
-                elapsedSeconds = 0
             }
-        })
+
+            var projectId = projects[projectIndex].id
+            var activityId = activities[activityIndex].id
+
+            KimaiApi.startTracking(kimaiUrl, apiToken, projectId, activityId, function(success, response) {
+                if (success && response) {
+                    isTracking = true
+                    currentTimeSheetId = response.id
+                    currentProject = projectComboBox.currentText
+                    currentActivity = activityComboBox.currentText
+                    elapsedSeconds = 0
+                }
+            })
     }
 
     function stopTracking() {
