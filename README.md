@@ -1,4 +1,5 @@
 # Kimai Tracker Plasmoid
+<img width="491" height="37" alt="Schermata_20260115_094718-1" src="https://github.com/user-attachments/assets/0c612dad-bc58-455a-b18b-785aa4242790" />
 
 A KDE Plasma widget (plasmoid) for tracking time with Kimai, allowing you to manage your time entries directly from your desktop panel or widgets.
 
